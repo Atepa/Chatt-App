@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Logo from "../assets/logo.svg";
 import Logout from "./Logout";
+import AddStory from "./Story";
+
+import { Link } from 'react-router-dom';
+
 export default function Contacts({ contacts, changeChat }) {
   const [currentUserName, setCurrentUserName] = useState(undefined);
   const [currentUserImage, setCurrentUserImage] = useState(undefined);
@@ -29,6 +33,7 @@ export default function Contacts({ contacts, changeChat }) {
     changeChat(contact);
 
   };
+
   return (
     <>
       {currentUserImage && currentUserImage && (
@@ -37,7 +42,8 @@ export default function Contacts({ contacts, changeChat }) {
           <h3 style={{ marginTop: '7px' }}>Exit</h3>
             <Logout/>
             <img src={Logo} alt="logo" />
-            <h3 style={{ marginTop: '7px' }}>snappy</h3>
+            <h3 style={{ marginTop: '7px' }}>Chatimsi</h3>
+            <AddStory/>
           </div>
 
           <div className="contacts">
@@ -53,16 +59,18 @@ export default function Contacts({ contacts, changeChat }) {
                   <div className="avatar">
                     { <img
                       src={`data:image/svg+xml;base64,${contact.avatarImage}`}
-                      alt=""
+                      alt={`${contact.userNickName}`}
                     /> }
                   </div>
                   <div className="userName">
                     <h3>{contact.userNickName}</h3>
                   </div>
+                  {contact.hasStory && <span>(has story)</span>}
                 </div>
               );
-            })}
+            })} 
           </div>
+
           <div className="current-user">
             <div className="avatar">
               <img
@@ -99,7 +107,7 @@ const Container = styled.div`
       text-transform: uppercase;
     }
   }
-
+  
   .contacts {
     display: flex;
     flex-direction: column;
@@ -140,6 +148,13 @@ const Container = styled.div`
       background-color: #9a86f3;
     }
   }
+  span {
+    background-color: #CEC2EB;  
+    color: gray;
+    padding: 5px 10px;  
+    border-radius: 0.5rem; 
+  }
+  
   .current-user {
     background-color: #0d0d30;
     display: flex;
@@ -157,13 +172,6 @@ const Container = styled.div`
         color: white;
       }
     }
-    @media screen and (min-width: 720px) and (max-width: 1080px) {
-      gap: 0.5rem;
-      .userName {
-        h2 {
-          font-size: 1rem;
-        }
-      }
-    }
   }
+
 `;

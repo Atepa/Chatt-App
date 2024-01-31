@@ -20,10 +20,7 @@ export default function Login() {
     };
 
     useEffect(() => {
-      console.log("asdasd");
-
         if (localStorage.getItem(process.env.REACT_APP_ADMIN_LOCALHOST_KEY)) {
-          console.log("asdasd");
           navigate("/admin/panel/0");
         }
     }, [navigate]);
@@ -71,7 +68,7 @@ export default function Login() {
               process.env.REACT_APP_ADMIN_LOCALHOST_KEY,
               JSON.stringify(response.data.user)
             );
-          navigate("/admin/panel");
+            navigate("/admin/panel/0");
           }
         }
       };

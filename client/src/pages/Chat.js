@@ -7,7 +7,8 @@ import { allUsersRoute, host } from "../utils/APIRoutes";
 import ChatContainer from "../components/ChatContainer";
 import Contacts from "../components/Contacts";
 import Welcome from "../components/Welcome";
-
+import checkTokenExpiration from '../middleware/TokenController';
+import { ToastContainer, toast } from "react-toastify";
 
 export default function Chat() {
   const navigate = useNavigate();
@@ -16,6 +17,14 @@ export default function Chat() {
   const [currentChat, setCurrentChat] = useState(undefined);
   const [currentUser, setCurrentUser] = useState(undefined);
 
+  const toastOptions = {
+    position: "bottom-right",
+    autoClose: 8000,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "dark",
+  };
+  
    useEffect(() => {
     const fetchData = async () => {
       if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
@@ -52,7 +61,6 @@ export default function Chat() {
               'Authorization': token,
             }
           });
-          console.log("asd",token);
           const data = await axiosInstance.get(`${allUsersRoute}/${currentUser._id}`); 
           setContacts(data['data'].users);
         } else {
@@ -64,13 +72,22 @@ export default function Chat() {
     fetchData();
   }, [currentUser, navigate]);
 
+  useEffect(() => {
+    // Her sayfa yüklendiğinde token kontrolünü yap.
+    const result = checkTokenExpiration();
+    if(!result.status){
+      toast.error(result.error, toastOptions);
+      return false;
+    }
+    toast.error(result.error, toastOptions);
+    return true; 
+  }, []);
+
   const handleChatChange = (chat) => {
     setCurrentChat(chat);
   };
   
-  
   return (
-
     <>
       <Container>
         <Alert>
@@ -83,9 +100,9 @@ export default function Chat() {
           ) : (
             <ChatContainer currentChat={currentChat} socket={socket} />
           )}
-
         </div>
       </Container>
+
     </>
   );
 }

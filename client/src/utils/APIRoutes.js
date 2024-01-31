@@ -8,4 +8,6 @@ export const recieveMessageRoute = `${host}/api/messages/getmsg`;
 export const setAvatarRoute = `${host}/api/auth/setavatar`;
 export const adminRoute = `${host}/api/admin/login`;
 export const adminUsersRoute = `${host}/api/admin/users`;
+export const adminUserRoute = `${host}/api/admin/user`;
+
 

@@ -32,7 +32,7 @@ exports.postCreateUser = async function postCreateUser(req, res) {
         userGender: userGender,
         userLocation:{
             locationCountry: 'Türkiye',
-            locationPostCode: '',
+            locationPostCode: 0,
             locationAddress: 'Ankara',
         },
         userCreatedAt: istanbulDate,
@@ -49,7 +49,6 @@ exports.postCreateUser = async function postCreateUser(req, res) {
 };
 
 exports.postLoginUser = async function postLoginUser(req, res) {
-    console.log('istek geldi');
 
     const {userMail, userPassword} = req.body;
     let user = await UserModel.findOne({userMail: userMail});

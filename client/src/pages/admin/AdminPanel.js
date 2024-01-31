@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useParams} from "react-router-dom";
 import Logo from "../../assets/logo.svg";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,8 +10,10 @@ import DataTable from 'react-data-table-component';
 
 export default function Login() {
     const [users, setUsers] = useState([]);
-    const [page, setPage] = useState([]);
+    const [localpage, setLocalPage] = useState([]);
     const [filter, setFilter] = useState([]);
+    const { page } = useParams();
+
 
     function handleFilter(event){
       const searchTerm = event.target.value.toLowerCase();
@@ -30,8 +32,9 @@ export default function Login() {
     };
 
     const handleViewDetails = (row) => {
-      navigate(`/users/${row._id}`);
+      navigate(`/admin/user/${row._id.toString()}`);
     };
+    
 
     const navigate = useNavigate();
 
@@ -90,36 +93,37 @@ export default function Login() {
     }, [navigate]);
 
     useEffect(() => {
-        console.log('a')
-        if (!localStorage.getItem(page)) {
-            setPage(1);
+        if (!localStorage.getItem(localpage)) {
+          setLocalPage(1);
         }else{
-            setPage(localStorage.getItem(page));
+          setLocalPage(localStorage.getItem(localpage));
         }   
         localStorage.setItem(
             'page',
-            page
+            localpage
         );
     }, []);
 
     useEffect(() => {
         const fetchData = async () => {
-            console.log (localStorage.getItem(page));
-            console.log(page);
-              const  token  = await JSON.parse(
-                localStorage.getItem('token')
-              );
-              const axiosInstance = axios.create({
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': token,
-                }
-              });
-              const { data } = await axiosInstance.get(`${adminUsersRoute}/0`); 
-              setUsers(data.users);
-              setFilter(data.users);
-          }
-    
+          console.log(page);
+          const  token  = await JSON.parse(
+            localStorage.getItem('token')
+          );
+          const axiosInstance = axios.create({
+            headers: {
+               'Content-Type': 'application/json',
+               'Authorization': token,
+            }
+          });
+          console.log(page);
+          const { data } = await axiosInstance.get(`${adminUsersRoute}/${page}`); 
+          if(data.users == null || data.users == 0) 
+            navigate(`/admin/panel/0}`);
+          setUsers(data.users);
+          setFilter(data.users);
+        }
+  
         fetchData();
       }, [navigate]);
      

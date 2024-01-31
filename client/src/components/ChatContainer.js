@@ -57,8 +57,8 @@
         });
   
         await axios.post(sendMessageRoute, {
-          from: data._id,
           to: currentChat._id,
+          from: data._id,
           message: msg,
         });
   
@@ -111,7 +111,7 @@
             />
           </div>
           <div className="userMail">
-            <h3>{currentChat.Mail}</h3>
+            <h3>{currentChat.userMail}</h3>
           </div>
         </div>
       </div>

@@ -8,12 +8,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { loginRoute } from "../utils/APIRoutes";
 
 export default function Login() {
-  // const userAgent = navigator.userAgent; // Kullanıcının tarayıcı ve işletim sistemi bilgisi
-  // const platform = navigator.platform; // Kullanıcının işletim sistemi platformu (Windows, macOS, Linux, vs.)
-
-  // const userLanguage = navigator.language; // Kullanıcının tarayıcı dil bilgisi
-
-  // console.log("user",userAgent,"platform",platform,"lang",userLanguage);
 
   const navigate = useNavigate();
   const [values, setValues] = useState({ userMail: "", userPassword: "" });
@@ -85,27 +79,6 @@ export default function Login() {
     <>
       <FormContainer>
         <form action="" onSubmit={(event) => handleSubmit(event)}>
-          <div className="brand">
-            <img src={Logo} alt="logo" />
-            <h1>snappy</h1>
-          </div>
-          <input
-            type="text"
-            placeholder="userMail"
-            name="userMail"
-            onChange={(e) => handleChange(e)}
-            min="3"
-          />
-          <input
-            type="password"
-            placeholder="userPassword"
-            name="userPassword"
-            onChange={(e) => handleChange(e)}
-          />
-          <button type="submit">Log In</button>
-          <span>
-            Don't have an account ? <Link to="/register">Create One.</Link>
-          </span>
         </form>
       </FormContainer>
       <ToastContainer />
