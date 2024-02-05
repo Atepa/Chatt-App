@@ -1,10 +1,22 @@
 const express = require('express');
 const authRouter = express.Router();
+const multer = require('multer');
 
 const authController = require('../controllers/authController');
 const registerValidate = require('../middleware/registerValidate');
 const tokenValidate = require('../middleware/tokenValidate');
 const loginValidate = require('../middleware/loginValidate');
+
+const storage = multer.diskStorage({
+    destination: function(req, file, cb){
+        return cb(null, "./public");
+    },
+    filename: function (req, file, cb){
+        return cb(null, `${Date.now()}_${file.originalname}`);
+    }
+});
+
+const upload = multer({ storage });
 
 // kullanıcı kayıt eder
 authRouter.post('/register', registerValidate, authController.postCreateUser);
@@ -13,12 +25,20 @@ authRouter.post('/register', registerValidate, authController.postCreateUser);
 authRouter.post('/login', loginValidate, authController.postLoginUser);
 
 // kullanıcı çıkış yaptırır
-authRouter.get('/logout/:id', tokenValidate, authController.getExitUser);
+authRouter.get('/logout/:id', authController.getExitUser);
 
 // kullanıcı şifre sıfırlar
 authRouter.post('/changepassword', tokenValidate, authController.postChangePasswordUser);
 
 // kullanıcı mail sıfırlar
+authRouter.post('/changemail', tokenValidate, authController.postChangeMailUser);
+//
+authRouter.get('/story', authController.getStories);
+
+authRouter.get('/story/:userId', authController.getStoryByUserId);
+
+authRouter.post('/add-story/user/:userId', upload.single('file'), authController.postStoryById);
+//
 authRouter.post('/changemail', tokenValidate, authController.postChangeMailUser);
 
 authRouter.get("/allusers/:id", tokenValidate, authController.getAllUsers);

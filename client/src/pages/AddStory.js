@@ -1,79 +1,138 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import styled from "styled-components";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { postStory } from "../utils/APIRoutes";
 
 
 export default function  FileInput()  {
-  const [file, setFile] = useState();
+  const navigate = useNavigate();
+  const [file , setFile] = useState();
   const [errorMessage, setErrorMessage] = useState();
+  const [currentUser, setCurrentUser] = useState(undefined);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
+  const [videoDuration, setVideoDuration] = useState(null);
 
+  const fileInputRef = React.useRef(null);
   const maxSizeInMB = 20;
   const maxDurationInSeconds = 30;
+  
   const toastOptions = {
     position: "bottom-right",
-    autoClose: 8000,
+    autoClose: 4000,
     pauseOnHover: true,
     draggable: true,
     theme: "dark",
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
+        navigate("/login");
+      } else {
+        setCurrentUser(
+          await JSON.parse(
+            localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
+          ));
+      }
+    };
+    fetchData();
+  }, [navigate]);
+
   function handleFileChange (e) {
     setFile(e.target.files[0]);
-    console.log(file);
-
-    console.log(e.target.files[0].size);
-    console.log(e.target.files[0].type);
-    console.log(maxSizeInMB * 1024 * 1024);
 
     if(!e.target.files[0].type.includes("video") && !e.target.files[0].type.includes("image") ){
-      setErrorMessage(`Sadece video ve fotoğraf kabul edilir.`)
+      setErrorMessage(`Sadece video ve fotoğraf kabul edilir...`)
       toast.error(`Sadece video ve fotoğraf kabul edilir.`, toastOptions);
+      setErrorMessage("");
+      setVideoPreview(null);
+      setImagePreview(null);
+      fileInputRef.current.value = "";
       return false; 
     }
-    // Dosya boyutunu kontrol et
     if (maxSizeInMB && e.target.files[0].size > maxSizeInMB * 1024 * 1024) {
       setErrorMessage(`Dosya boyutu ${maxSizeInMB}MB'dan büyük olamaz.`)
-      toast.error(`Dosya boyutu ${maxSizeInMB}MB'dan büyük olamaz.`, toastOptions);
+      toast.error(`Dosya boyutu ${maxSizeInMB}MB'dan büyük olamaz`, toastOptions);
+      setErrorMessage("");
+      setVideoPreview(null);
+      setImagePreview(null);
+      fileInputRef.current.value = "";
       return false;   
     } else {
       setErrorMessage("");
     } 
-    
+    if (e.target.files[0].type.includes("image")) {
+      setVideoDuration(15000)
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setVideoPreview(null);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
 
-    // Dosya süresini kontrol et (Bu örnek sadece video dosyaları içindir)
     if (maxDurationInSeconds && e.target.files[0].type.includes("video")) {
       const video = document.createElement("video");
-        video.preload = "metadata";
-      console.log(video.duration);
-      console.log(video);
+      video.preload = "metadata";
 
       video.onloadedmetadata = () => {
-        console.log(video.duration);
-        console.log(video);
-
+        setVideoDuration(video.duration)
         if (video.duration > maxDurationInSeconds) {
           setErrorMessage(`Dosya süresi ${maxDurationInSeconds} saniyeden uzun olamaz.`)
           toast.error(`Dosya süresi ${maxDurationInSeconds} saniyeden uzun olamaz.`, toastOptions);
+          setErrorMessage("");
+          setVideoPreview(null);
+          setImagePreview(null);
+          fileInputRef.current.value = "";
           return false;
         } else {
           setErrorMessage("");
         } 
       };
       video.src = URL.createObjectURL(e.target.files[0]);
+      setVideoPreview(video.src);
+      setImagePreview(null);
     }
 
   };
   function handleUpload(event) {
-    event.preventDefault();
 
-    console.log(errorMessage);
+    event.preventDefault();
     if( errorMessage != ""){
       toast.error(errorMessage, toastOptions);
+      setErrorMessage("");
+      setVideoPreview(null);
+      setImagePreview(null);
+      fileInputRef.current.value = "";
       return false;
     }
-    // const formData = new FormData();
-    // formData.append('file',file);
-    // axios
+    // else if(errorMessage == "") {
+    //   toast.error("Bir video veya fotoğraf seçilmeli", toastOptions);
+    //   setVideoPreview(null);
+    //   setImagePreview(null);
+    //   fileInputRef.current.value = "";
+    //   return false;
+    // } 
+    const formData = new FormData();
+    formData.append('file',file);
+    formData.append('duration', videoDuration);
+    formData.append('senderUserNickName', currentUser.userNickName);
+    formData.append('senderUserAvatarImage', currentUser.avatarImage);
+
+    axios.post( `${postStory}/${currentUser._id}` ,formData)
+    .then(res => {  
+      toast.error("Kayıt Başarılı -- Yönlendirme yapılıyor...", toastOptions);
+      setTimeout(() => {
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        navigate("/story");
+      }, 3000); 
+    })
+    .catch(er => console.log(er))
   }
 
   return (
@@ -84,7 +143,10 @@ export default function  FileInput()  {
             type="file"
             accept="image/jpeg, image/png, video/mp4"
             onChange={handleFileChange}
+            ref={fileInputRef} // Add this line to get a reference to the input element
           />
+          {imagePreview && <img controls width ="300" src={imagePreview} alt="Preview" />}
+          {videoPreview && <video controls width="300" src={videoPreview} />}
         <button> upload </button>
         </form>
       </FormContainer>
@@ -102,6 +164,9 @@ const FormContainer = styled.div`
   gap: 1rem;
   align-items: center;
   background-color: #131324;
+  overflow-y: auto; /* Yatay kaydırma çubuğunu ekler */
+  overflow-x: auto; /* Yatay kaydırma çubuğunu ekler */
+
   .brand {
     display: flex;
     align-items: center;

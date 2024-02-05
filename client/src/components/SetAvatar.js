@@ -43,7 +43,6 @@ export default function SetAvatar() {
       const { token }= await JSON.parse(
         localStorage.getItem('token')
       );
-      console.log(token);
 
       const axiosInstance = axios.create({
         headers: {
@@ -57,7 +56,6 @@ export default function SetAvatar() {
 
       data = data['data'].userData;
 
-      console.log(data.isAvatarImageSet);
 
       if (data.isAvatarImageSet) {
         result.isAvatarImageSet = true;

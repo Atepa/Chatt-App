@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Logo from "../assets/logo.svg";
 import Logout from "./Logout";
-import AddStory from "./Story";
-
-import { Link } from 'react-router-dom';
+import AddStory from "./AddStoryNavigate";
 
 export default function Contacts({ contacts, changeChat }) {
   const [currentUserName, setCurrentUserName] = useState(undefined);
@@ -31,12 +29,11 @@ export default function Contacts({ contacts, changeChat }) {
   const changeCurrentChat = (index, contact) => {
     setCurrentSelected(index);
     changeChat(contact);
-
   };
 
   return (
     <>
-      {currentUserImage && currentUserImage && (
+       {currentUserImage && currentUserImage && (
         <Container>
           <div className="brand">
           <h3 style={{ marginTop: '7px' }}>Exit</h3>
@@ -97,7 +94,6 @@ const Container = styled.div`
     align-items: center;
     gap: 1rem;
     justify-content: center;
-    
     img {
       height: 2rem;
     }
@@ -124,7 +120,7 @@ const Container = styled.div`
     }
     .contact {
       background-color: #ffffff34;
-      min-height: 5rem;
+      min-height: 4.5rem;
       cursor: pointer;
       width: 90%;
       border-radius: 0.2rem;

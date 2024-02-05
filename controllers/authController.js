@@ -1,6 +1,12 @@
 const usersModel = require('../models/userModel');
 const UserModel = require('../models/userModel');
+const StoryModel = require('../models/storyModel');
+const AccessUsersStoryModel = require('../models/accessUserStory');
+const upload = require("../middleware/uploadMulter");
+
 const bcrypt = require('bcrypt');
+const storyModel = require('../models/storyModel');
+const { response } = require('express');
 //const getCurrentDate = require('../helper/getCurrentDate');
 
 exports.postCreateUser = async function postCreateUser(req, res) {
@@ -20,7 +26,6 @@ exports.postCreateUser = async function postCreateUser(req, res) {
 
     const hashedPassword = await bcrypt.hash(userPassword, 10);
     await UserModel.countDocuments({userIsActive:true}) === 0 ? IsAdmin = true : IsAdmin = false; 
-    console.log(await UserModel.countDocuments({userIsActive:true}));
     checkUser = new UserModel({
         userActive:1,
         userIsAdmin: IsAdmin,
@@ -135,6 +140,7 @@ module.exports.getAllUsers = async function getAllUsers (req, res) {
           "userMail",
           "userNickName",
           "avatarImage",
+          "hasStory",
           "_id",
         ]);
       
@@ -144,7 +150,7 @@ module.exports.getAllUsers = async function getAllUsers (req, res) {
         return res.status(200).json({ users, status: true });
 };
 
-module.exports.setAvatar = async (req, res) => {
+module.exports.setAvatar = async function setAvatar (req, res) {
     try{
         const userId = req.params.id;
         console.log(userId);
@@ -162,9 +168,62 @@ module.exports.setAvatar = async (req, res) => {
         console.log(error);
         return res.status(404).json({ status:false , msg: error.message});
     }
+};
+//
+module.exports.getStories = async function getStories (req, res) {
+    const users = await UserModel.find({ hasStory: true}).select([
+        "avatarImage",
+        "userNickName",
+        "_id",
+        "hasStory",
+    ]);
+  
+    if (!users) 
+      return res.status(404).json({ msg: 'Kayıt Bulunamadı', status: false });
 
+    return res.status(200).json({ users, status: true });
+};
 
-    
-   
+module.exports.getStoryByUserId = async function getStoryByUserId (req, res) {
+
+    const story = await StoryModel.find({ senderUserId: req.params.userId }).select([
+        "_id",
+        "senderUserId",
+        "senderUserAvatarImage",
+        "senderUserNickName",
+        "storyPath",
+        "duration",
+        "createdAt",
+        "isActive",
+    ]);
+    if (!story) 
+      return res.status(404).json({ msg: 'Kayıt Bulunamadı', status: false });
+
+    return res.status(200).json({ story, count: story.length, status: true });
+};
+
+module.exports.postStoryById = async function postStoryById (req, res) {
+    const user = await UserModel.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $set: { hasStory: true } },
+        { new: true } 
+    );
+    user? delete user.userPassword : null ;
+    const Story = new storyModel({
+        senderUserId: req.params.userId,
+        senderUserAvatarImage: req.body.senderUserAvatarImage,
+        senderUserNickName: req.body.senderUserNickName,
+        duration: req.body.duration,
+        storyPath: req.file.path,
+        size: req.file.size,
+    });
+
+    await Story.save()
+    .then(response => {
+        return res.status(200).json({status:true, response});
+    })
+    .catch(error => {
+        return res.status(404).json({status:false, msg:'Kayıt başarısız.',error});
+    })   
     
 };

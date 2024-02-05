@@ -12,7 +12,7 @@ function tokenAuth(req, res, next){
         req.isAdmin = decodedToken.isAdmin;
         next();
     } catch (ex) {
-        res.status(400).send({msg:ex +'---hatalı token', status: false});
+        res.status(401).send({msg:ex +'---hatalı token', status: false});
     }
 };
 module.exports = tokenAuth; 

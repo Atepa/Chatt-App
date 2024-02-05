@@ -7,8 +7,8 @@ import { allUsersRoute, host } from "../utils/APIRoutes";
 import ChatContainer from "../components/ChatContainer";
 import Contacts from "../components/Contacts";
 import Welcome from "../components/Welcome";
-import checkTokenExpiration from '../middleware/TokenController';
-import { ToastContainer, toast } from "react-toastify";
+import LogoutFunction from "../components/LogoutFunction";
+import { toast } from "react-toastify";
 
 export default function Chat() {
   const navigate = useNavigate();
@@ -37,7 +37,6 @@ export default function Chat() {
         );
       }
     };
-
     fetchData();
   }, [navigate]);
 
@@ -52,7 +51,7 @@ export default function Chat() {
     const fetchData = async () => {
       if (currentUser) {
         if (currentUser.isAvatarImageSet) {
-          const  token  = await JSON.parse(
+          const token = await JSON.parse(
             localStorage.getItem('token')
           );
           const axiosInstance = axios.create({
@@ -61,27 +60,35 @@ export default function Chat() {
               'Authorization': token,
             }
           });
-          const data = await axiosInstance.get(`${allUsersRoute}/${currentUser._id}`); 
-          setContacts(data['data'].users);
+
+          try {
+            const response = await axiosInstance.get(`${allUsersRoute}/${currentUser._id}`);
+            if (response.status !== 200) {
+              toast.error(response.data.msg || 'Bir hata oluştu', toastOptions);
+            } else {
+              setContacts(response.data.users);
+            }
+          } catch (error) {
+            if(error.response.status === 401) {
+              const success = await LogoutFunction();
+              if (success) {
+                toast.error("oturumun süresi bitmiştir", toastOptions);
+                setTimeout(() => {
+                  navigate("/login");
+                }, 3000); 
+                console.error("Logout failed");
+              }
+            }
+            toast.error("oturumun süresi bitmiştir", toastOptions);
+
+          }
         } else {
           navigate("/setAvatar");
         }
       }
     };
-
     fetchData();
   }, [currentUser, navigate]);
-
-  useEffect(() => {
-    // Her sayfa yüklendiğinde token kontrolünü yap.
-    const result = checkTokenExpiration();
-    if(!result.status){
-      toast.error(result.error, toastOptions);
-      return false;
-    }
-    toast.error(result.error, toastOptions);
-    return true; 
-  }, []);
 
   const handleChatChange = (chat) => {
     setCurrentChat(chat);
@@ -102,7 +109,6 @@ export default function Chat() {
           )}
         </div>
       </Container>
-
     </>
   );
 }
@@ -116,13 +122,16 @@ const Container = styled.div`
   gap: 1rem;
   align-items: center;
   background-color: #131324;
+  overflow-y: auto; 
+  overflow-x: auto; 
+
   .container {
     height: 85vh;
     width: 85vw;
     background-color: #00000076;
     display: grid;
     grid-template-columns: 25% 75%;
-    @media screen and (min-width: 720px) and (max-width: 1080px) {
+    @media screen and (min-width: 700px) and (max-width: 1080px) {
       grid-template-columns: 35% 65%;
     }
   }

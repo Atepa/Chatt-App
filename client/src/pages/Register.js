@@ -159,6 +159,8 @@ const FormContainer = styled.div`
   gap: 1rem;
   align-items: center;
   background-color: #131324;
+  overflow-y: auto; /* Yatay kaydırma çubuğunu ekler */
+
   .brand {
     display: flex;
     align-items: center;

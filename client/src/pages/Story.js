@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
-import { useNavigate, Link } from "react-router-dom";
-import Logo from "../assets/logo.svg";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { loginRoute } from "../utils/APIRoutes";
+import { getStories } from "../utils/APIRoutes";
+import AddStory from "../components/AddStoryNavigate";
+import HasStoryContacts from "../components/HasStoryContacts";
+import LogoutFunction from "../components/LogoutFunction";
+import Atepa from "../assets/loader.gif";
+import logo from "../assets/logo.svg";
+import InstaStory from "react-insta-stories";
+import ReactPlayer from 'react-player';
+import MainPageNavigate from "../components/MainPageNavigate";
+import UserStoryNavigate from "../components/UserStoryNavigate";
 
-export default function Login() {
+export default function Story() {
+  const [userHasStory, setUserHasStory] = useState([]);
+  const [currentUser, setCurrentUser] = useState(undefined);
+  const [currentStory, setCurrentStory] = useState(undefined);
 
-  const navigate = useNavigate();
-  const [values, setValues] = useState({ userMail: "", userPassword: "" });
   const toastOptions = {
     position: "bottom-right",
     autoClose: 8000,
@@ -18,68 +27,156 @@ export default function Login() {
     draggable: true,
     theme: "dark",
   };
+
+  const stor = [
+    {
+      url: `${Atepa}`,
+      duration: 15000,
+      header: {
+        heading: `Chatimsi`,
+        subheading: 'Posted now',
+        profileImage: logo,
+        // profileImage: 'https://picsum.photos/100/100',
+      },
+    },
+  ];
+
+  const navigate = useNavigate();
+
+  // kullanıcı bilgileri alındı
   useEffect(() => {
-    if (localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
-      navigate("/");
-    }
-  }, []);
-
-  const handleChange = (event) => {
-    setValues({ ...values, [event.target.name]: event.target.value });
-  };
-
-  const validateForm = () => {
-    const { userMail, userPassword } = values;
-    if (userMail === "") {
-      toast.error("Email and Password is required.", toastOptions);
-      return false;
-    } else if (userPassword === "") {
-      toast.error("Email and Password is required.", toastOptions);
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (validateForm()) {
-      const { userMail, userPassword } = values;
-      const response = await axios.post(loginRoute, {
-        userMail,
-        userPassword,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
- 
-      const data = response.data;
-      console.log(data.X_Access_Token);
-
-      if (data.status === false) {
-        toast.error(data.msg, toastOptions);
+    const fetchData = async () => {
+      if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
+        navigate("/login");
+      } else {
+        setCurrentUser(
+          await JSON.parse(
+            localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
+          ));
       }
-      if (data.status === true) {
-        const token = data.X_Access_Token; // 'Authorization' yerine 'authorization' olabilir
+    };
+    fetchData();
+  }, [navigate]);
 
-        localStorage.setItem(
-          process.env.REACT_APP_LOCALHOST_KEY,
-          JSON.stringify(data.user),
-        );
-        localStorage.setItem(
-          "token",
-          JSON.stringify(token),
-        );
-      navigate("/");
-      }
-    }
-  };
   
+  useEffect(() => {
+    const fetchData = async () => {
+      if (currentUser) {
+        if (currentUser.isAvatarImageSet) {
+          const  token  = await JSON.parse(
+            localStorage.getItem('token')
+          );
+          const axiosInstance = axios.create({
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token,
+            }
+          });
+          try {
+            const response = await axiosInstance.get(`${getStories}`);
+            if (response.status !== 200) {
+              toast.error(response.data.msg || 'Bir hata oluştu', toastOptions);
+            } else {
+              setUserHasStory(response.data.users);
+            }
+          } catch (error) {
+            // if(error.response.status === 401) {
+              const success = await LogoutFunction();
+              if (success) {
+                toast.error("oturumun süresi bitmiştir", toastOptions);
+                navigate("/login");
+              } else {
+                console.error("Logout failed");
+              }
+              console.log(error);
+            // }
+          }
+        } else {
+          navigate("/setAvatar");
+        }
+      }
+    };
+    fetchData();
+  }, [currentUser, navigate]);
+
+
+  const handleStoryChange = async (story) => {
+
+    await axios.get(`${getStories}/${story._id}`)
+    .then( res => {
+      const paths = res.data.story.map(story => `${process.env.REACT_APP_URL}${story.storyPath}`);
+      const userNames = res.data.story.map(story => `${story.senderUserNickName}`);
+      const duration = res.data.story.map(story => `${story.duration}`);
+      const createdAt = res.data.story.map(story => {
+        const dateObject = new Date(story.createdAt);
+        const saat = dateObject.getHours();
+        const dakika = dateObject.getMinutes();
+        return `${saat}:${dakika}`;
+      });
+      const updatedStor = paths.map((path, index) => {
+        return {
+          url: path,
+          duration: duration[index] || 5000, // stor'daki değeri al, eğer yoksa varsayılan değeri kullan
+          header: {
+            heading: userNames[index],
+            subheading: createdAt[index],
+          },
+        };
+      });
+      setCurrentStory(updatedStor);
+    })
+    .catch(error =>   toast.error(error || 'Bir hata oluştu', toastOptions) )    
+  };
+
   return (
     <>
       <FormContainer>
-        <form action="" onSubmit={(event) => handleSubmit(event)}>
+      <div className="forms-container">
+        <form className="add-story-form">
+          <h>Story Ekle</h>
+          <AddStory />
+          <h></h>
+          <h></h>
+          <h>Güncelle</h>
+          <UserStoryNavigate />
+          <h></h>
+          <h></h>
+          <h>Anasayfa</h>
+          <MainPageNavigate />
         </form>
+        <form className="users-has-story">
+          <h>Arkadaşların</h> 
+          <HasStoryContacts contacts={userHasStory} changeChat={handleStoryChange}/>
+        </form >
+        <form className="users-story">
+        <h>Story</h>
+          <InstaStory
+            key={currentStory ? currentStory.length : 0} 
+            stories={ 
+              currentStory?.map( story =>({ 
+              ...story,
+            })) 
+            || stor.map(story => ({
+              ...story,
+            })) }
+            loop={true}
+            defaultInterval={6000}
+            width={400}
+            height={500}
+            storyContainerStyles={{ borderRadius: 8, overflow: "hidden", backgroundColor: "black",border: "2px solid #333"}}
+            onStoryEnd={(s, st) => console.log("story ended", s, st)}
+            onAllStoriesEnd={(s, st) => console.log("all stories ended", s, st)}
+            onStoryStart={(s, st) => console.log("story started", s, st)}
+            storyStyles={{
+              width: '100%', 
+              height: '100%', 
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          />
+        </form >
+      </div>
       </FormContainer>
       <ToastContainer />
     </>
@@ -95,20 +192,62 @@ const FormContainer = styled.div`
   gap: 1rem;
   align-items: center;
   background-color: #131324;
-  .brand {
+  overflow-y: auto;
+  overflow-x: auto;
+
+  .forms-container {
     display: flex;
+    gap: 1rem; 
+  }
+  .add-story-form {
+    height: 70vh;
+    width: 15vw;
+    align-self: flex-center;
     align-items: center;
-    gap: 1rem;
-    justify-content: center;
-    img {
-      height: 5rem;
-    }
-    h1 {
+    button {
+      background-color: #4e0eff;
       color: white;
+      padding: 1rem 2rem;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 0.4rem;
+      font-size: 0.5 rem;
       text-transform: uppercase;
+      &:hover {
+        background-color: #4e0ead;
+      }
     }
   }
-
+  .users-has-story {
+    height: 70vh;
+    width: 30vw;
+    align-self: flex-center;
+    align-items: center;
+  }
+  .users-story {
+    height: 70vh;
+    width: 30vw;
+    align-self: flex-center;
+    align-items: center;
+    img {
+      width: 23vw;
+      height: 48vh;
+      object-fit: cover; 
+      object-position: center; 
+    }
+  }
+  h{
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+  }
+ 
+  .users-has-story {
+    align-self: flex;
+    grid-template-columns: 25% 75%;
+  }
   form {
     display: flex;
     flex-direction: column;
@@ -130,27 +269,5 @@ const FormContainer = styled.div`
       outline: none;
     }
   }
-  button {
-    background-color: #4e0eff;
-    color: white;
-    padding: 1rem 2rem;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 0.4rem;
-    font-size: 1rem;
-    text-transform: uppercase;
-    &:hover {
-      background-color: #4e0eff;
-    }
-  }
-  span {
-    color: white;
-    text-transform: uppercase;
-    a {
-      color: #4e0eff;
-      text-decoration: none;
-      font-weight: bold;
-    }
-  }
+  
 `;

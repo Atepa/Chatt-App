@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const userLocationSchema = require('./userLocation');
 const jwt = require('jsonwebtoken');
 
-
 const istanbulTime = new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" });
 const istanbulDate = new Date(istanbulTime);
 istanbulDate.setHours(istanbulDate.getHours() + 3);
@@ -23,6 +22,7 @@ const usersSchema = mongoose.Schema({
     userProfilePhotoUrl: { type: String, default: 'default.png'}, 
     isAvatarImageSet: { type: Boolean, default: false },
     avatarImage: { type: String, default: '' },
+    hasStory: { type: Boolean, default: false },
 });
 usersSchema.methods.createAuthToken = function() {
     return jwt.sign(

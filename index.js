@@ -16,6 +16,7 @@ const app = express();
 require('./middleware/production') (app);
 
 app.use(cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true} ));
 
@@ -47,10 +48,10 @@ const server = app.listen(process.env.PORT, ()=>{
 });
 
 const io = socket(server, {
-cors: {
-    origin: "http://localhost:3000",
-    credentials: true,
-},
+  cors: {
+      origin: "http://localhost:3000",
+      credentials: true,
+  },
 });
 
 global.onlineUsers = new Map();
