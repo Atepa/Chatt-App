@@ -6,9 +6,23 @@ import Logo from "../assets/logo.svg";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { registerRoute } from "../utils/APIRoutes";
+import  ColorPicker  from "../components/ColorPicker";
+
 
 export default function Register() {
   const navigate = useNavigate();
+  
+    const [userColor, setUserColor] = useState('#SET-COLOR');
+    const [values, setValues] = useState({
+      userName: "",
+      userMail: "",
+      userPassword: "",
+      confirmPassword: "",
+      userGender: "",
+      userColor: "",
+      userNickName: "",
+    });
+
   const toastOptions = {
     position: "bottom-right",
     autoClose: 8000,
@@ -16,21 +30,16 @@ export default function Register() {
     draggable: true,
     theme: "dark",
   };
-  const [values, setValues] = useState({
-    userName: "",
-    userMail: "",
-    userPassword: "",
-    confirmPassword: "",
-    userGender: "",
-    userColor: "",
-    userNickName: "",
-  });
 
   useEffect(() => {
     if (localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
       navigate("/");
     }
   }, []);
+
+  const handleColorChange = (color) => {
+    setUserColor(color);
+};
 
   const handleChange = (event) => {
     setValues({ ...values, [event.target.name]: event.target.value });
@@ -95,7 +104,7 @@ export default function Register() {
         <form action="" onSubmit={(event) => handleSubmit(event)}>
           <div className="brand">
             <img src={Logo} alt="logo" />
-            <h1>snappy</h1>
+            <h1>Chatimsi</h1>
           </div>
           <input
             type="email"
@@ -127,12 +136,15 @@ export default function Register() {
             name="userNickName"
             onChange={(e) => handleChange(e)}
           />
-             <input
+          <input
             type="text"
             placeholder="#Color"
             name="userColor"
-            onChange={(e) => handleChange(e)}
+            value={userColor}
+            readOnly // Kullanıcı tarafından değiştirilmesini istemiyorsanız
           />
+          <h3 style={{ color: userColor }}>Set Color</h3>
+          <ColorPicker onColorChange={handleColorChange}/>
           <select name="userGender" onChange={(e) => handleChange(e)}>
             <option value="" disabled selected hidden>Cinsiyet Seçin</option>
             <option value="male">Erkek</option>
@@ -159,9 +171,11 @@ const FormContainer = styled.div`
   gap: 1rem;
   align-items: center;
   background-color: #131324;
-  overflow-y: auto; /* Yatay kaydırma çubuğunu ekler */
+  margin: 0 auto; /* Formun ortalanması */
+  overflow: auto;
 
   .brand {
+    top: 0;
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -177,10 +191,17 @@ const FormContainer = styled.div`
   form {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.3rem;
     background-color: #00000076;
-    border-radius: 2rem;
+    border-radius: 5rem;
     padding: 3rem 5rem;
+    max-width: 600px; /* Maksimum genişlik sınırlaması */
+  }
+  h3 {
+    color: gray; 
+    font-size: 14px; 
+    margin-top: -6px; 
+    margin-bottom: -20px; 
   }
   input {
     background-color: transparent;

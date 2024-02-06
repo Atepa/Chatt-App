@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Logo from "../assets/logo.svg";
 import Logout from "./Logout";
 import AddStory from "./AddStoryNavigate";
 
+
 export default function Contacts({ contacts, changeChat }) {
+  const navigate = useNavigate();
+
   const [currentUserName, setCurrentUserName] = useState(undefined);
   const [currentUserImage, setCurrentUserImage] = useState(undefined);
   const [currentSelected, setCurrentSelected] = useState(undefined);
@@ -29,6 +33,14 @@ export default function Contacts({ contacts, changeChat }) {
   const changeCurrentChat = (index, contact) => {
     setCurrentSelected(index);
     changeChat(contact);
+  };
+  
+  const userSettingNavigate = async () => {
+    try {
+      navigate("/user/update");
+    } catch (error) {
+        console.error("Logout failed");
+    }
   };
 
   return (
@@ -73,6 +85,7 @@ export default function Contacts({ contacts, changeChat }) {
               <img
                 src={`data:image/svg+xml;base64,${currentUserImage}`}
                 alt="avatar"
+                onClick={userSettingNavigate}
               />
             </div>
             <div className="userName">
@@ -161,6 +174,8 @@ const Container = styled.div`
       img {
         height: 4rem;
         max-inline-size: 100%;
+        cursor: pointer; 
+
       }
     }
     .userName {
@@ -169,5 +184,4 @@ const Container = styled.div`
       }
     }
   }
-
 `;
