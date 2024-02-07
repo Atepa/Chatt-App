@@ -38,8 +38,10 @@ authRouter.get('/story', authController.getStories);
 authRouter.get('/story/:userId', authController.getStoryByUserId);
 
 authRouter.post('/add-story/user/:userId', upload.single('file'), authController.postStoryById);
-//
-authRouter.post('/changemail', tokenValidate, authController.postChangeMailUser);
+// spesifik kullanıcıyı getirir
+authRouter.get('/user/info/:userId', authController.getUserByUserId);
+
+authRouter.put('/user/update/:userId', authController.putUserByUserId);
 
 authRouter.get("/allusers/:id", tokenValidate, authController.getAllUsers);
 

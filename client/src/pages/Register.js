@@ -51,7 +51,7 @@ export default function Register() {
       toast.error("Password and confirm password should be same.", toastOptions);
       return false;
     } else if (userName.length < 5) {
-      toast.error("Username should be greater than 3 characters.", toastOptions);
+      toast.error("Username should be greater than 5 characters.", toastOptions);
       return false;
     } else if (userPassword.length < 8) {
       toast.error( "Password should be equal or greater than 8 characters.", toastOptions);

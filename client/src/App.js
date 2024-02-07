@@ -9,6 +9,8 @@ import AdminPanel from "./pages/admin/AdminPanel";
 import AdminGetUser from "./pages/admin/AdminGetUser";
 import AddStory from "./pages/AddStory";
 import Story from "./pages/Story";
+import InfoUser from "./pages/InfoUser";
+
 
 export default function App() {
   return (
@@ -23,6 +25,8 @@ export default function App() {
         <Route path="story" element={<Story />} />
         <Route path="story/upload" element={<AddStory />} />
         <Route path="/" element={<Chat />} />
+        <Route path="/user/info" element={<InfoUser />} />
+
         
 
       </Routes>

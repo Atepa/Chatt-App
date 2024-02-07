@@ -37,10 +37,10 @@ export default function SetAvatar() {
       toast.error("Please select an avatar", toastOptions);
     } else {
 
-      const { result }= await JSON.parse(
+      const  result = await JSON.parse(
         localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
       );
-      const { token }= await JSON.parse(
+      const token = await JSON.parse(
         localStorage.getItem('token')
       );
 

@@ -183,6 +183,36 @@ module.exports.getStories = async function getStories (req, res) {
 
     return res.status(200).json({ users, status: true });
 };
+module.exports.getUserByUserId = async function getUserByUserId (req, res) {
+    await UserModel.find({ _id: req.params.userId}).select([
+        "userMail",
+        "userName",
+        "userNickName",
+        "userColor",
+        "userGender",
+        "userCreatedAt",
+        "userLastAccessTime",
+        "isAvatarImageSet",
+        "avatarImage"
+    ])
+    .then(users => { return res.status(200).json({ users, status: true }); })
+    .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error}`, status: false });})
+};
+
+module.exports.putUserByUserId = async function putUserByUserId (req, res) {
+    // const hashedPassword = await bcrypt.hash(userPassword, 10);
+    
+    const updatedFields = req.body;
+    console.log(updatedFields);
+    await UserModel.findByIdAndUpdate(
+        req.params.userId,
+        { $set: updatedFields }, 
+        { new: true } 
+    ) 
+    .then(users => { return res.status(200).json({ users, status: true }); })
+    .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error}`, status: false });})
+};
+
 
 module.exports.getStoryByUserId = async function getStoryByUserId (req, res) {
 

@@ -19,9 +19,11 @@ export default function Contacts({ contacts, changeChat }) {
         const data = await JSON.parse(
           localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
         );
-  
         setCurrentUserName(data.userName);
         setCurrentUserImage(data.avatarImage);
+        console.log(currentUserName)
+        console.log(currentUserImage)
+
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -37,7 +39,7 @@ export default function Contacts({ contacts, changeChat }) {
   
   const userSettingNavigate = async () => {
     try {
-      navigate("/user/update");
+      navigate("/user/info");
     } catch (error) {
         console.error("Logout failed");
     }

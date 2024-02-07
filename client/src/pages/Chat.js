@@ -51,6 +51,8 @@ export default function Chat() {
   useEffect(() => {
     const fetchData = async () => {
       if (currentUser) {
+        console.log(currentUser);
+
         if (currentUser.isAvatarImageSet) {
           const token = await JSON.parse(
             localStorage.getItem('token')
@@ -64,6 +66,7 @@ export default function Chat() {
 
           try {
             const response = await axiosInstance.get(`${allUsersRoute}/${currentUser._id}`);
+
             if (response.status !== 200) {
               toast.error(response.data.msg || 'Bir hata oluştu', toastOptions);
             } else {
@@ -81,7 +84,6 @@ export default function Chat() {
               }
             }
             toast.error("oturumun süresi bitmiştir", toastOptions);
-
           }
         } else {
           navigate("/setAvatar");

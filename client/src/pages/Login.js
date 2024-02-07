@@ -65,7 +65,6 @@ export default function Login() {
       }
       if (data.status === true) {
         const token = data.X_Access_Token; // 'Authorization' yerine 'authorization' olabilir
-
         localStorage.setItem(
           process.env.REACT_APP_LOCALHOST_KEY,
           JSON.stringify(data.user),
