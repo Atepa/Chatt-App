@@ -39,7 +39,7 @@ export default function Register() {
 
   const handleColorChange = (color) => {
     setUserColor(color);
-};
+  };
 
   const handleChange = (event) => {
     setValues({ ...values, [event.target.name]: event.target.value });

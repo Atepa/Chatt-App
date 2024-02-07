@@ -101,13 +101,12 @@ exports.getExitUser = async function getExitUser(req, res) {
 };
 
 exports.postChangePasswordUser = async function postChangePasswordUser(req, res) {
-    const {userMail, userPassword} = req.body;
-
+    const { userPassword} = req.body;
     const hashedPassword= await bcrypt.hash(userPassword, 10);
     const user = await UserModel.findOneAndUpdate(
-        { userMail: userMail },
+        { _id: req.params.userId },
         { $set: { userPassword: hashedPassword } },
-        { new: true } // Güncellenmiş kullanıcı bilgisini döndürmek için {new: true} kullanılabilir
+        { new: true } 
     );
 
     if(user){
@@ -120,11 +119,10 @@ exports.postChangePasswordUser = async function postChangePasswordUser(req, res)
 
 exports.postChangeMailUser = async function postChangeMailUser(req, res) {
     const { userMail, newMail } = req.body;
-
     const user = await UserModel.findOneAndUpdate(
         { userMail: userMail },
         { $set: { userMail: newMail } },
-        { new: true } // Güncellenmiş kullanıcı bilgisini döndürmek için {new: true} kullanılabilir
+        { new: true } 
     );
 
     if(!user)
@@ -153,7 +151,6 @@ module.exports.getAllUsers = async function getAllUsers (req, res) {
 module.exports.setAvatar = async function setAvatar (req, res) {
     try{
         const userId = req.params.id;
-        console.log(userId);
         const avatarImage = req.body.avatarImage;
         const userData = await usersModel.findByIdAndUpdate(
             {_id: userId},
@@ -165,11 +162,10 @@ module.exports.setAvatar = async function setAvatar (req, res) {
 
          return res.status(200).json({ status: true, userData });
     }catch(error){
-        console.log(error);
         return res.status(404).json({ status:false , msg: error.message});
     }
 };
-//
+
 module.exports.getStories = async function getStories (req, res) {
     const users = await UserModel.find({ hasStory: true}).select([
         "avatarImage",
@@ -183,6 +179,7 @@ module.exports.getStories = async function getStories (req, res) {
 
     return res.status(200).json({ users, status: true });
 };
+
 module.exports.getUserByUserId = async function getUserByUserId (req, res) {
     await UserModel.find({ _id: req.params.userId}).select([
         "userMail",
@@ -199,20 +196,35 @@ module.exports.getUserByUserId = async function getUserByUserId (req, res) {
     .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error}`, status: false });})
 };
 
-module.exports.putUserByUserId = async function putUserByUserId (req, res) {
-    // const hashedPassword = await bcrypt.hash(userPassword, 10);
-    
-    const updatedFields = req.body;
-    console.log(updatedFields);
+module.exports.putUserByUserId = async function putUserByUserId (req, res) {    
+    const { standartValues } = req.body;
     await UserModel.findByIdAndUpdate(
         req.params.userId,
-        { $set: updatedFields }, 
+        { $set: standartValues }, 
         { new: true } 
     ) 
     .then(users => { return res.status(200).json({ users, status: true }); })
     .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error}`, status: false });})
 };
 
+module.exports.putUserPasswordByUserId = async function putUserPasswordByUserId (req, res) { 
+    const { oldUserPassword ,newUserPassword } = req.body;
+    const newHashedPassword = await bcrypt.hash(newUserPassword, 10);
+    await UserModel.find({ _id: req.params.userId }).select(["userPassword"])
+    .then(async user => {     
+        const hashedPassword = await bcrypt.compare(oldUserPassword, user[0].userPassword);
+        if(!hashedPassword) 
+            return res.status(400).json({ msg: `Mevcut Şifreniz Doğru Değil`, status: false});
+            await UserModel.findOneAndUpdate(
+                { _id: req.params.userId },
+                { $set: { userPassword: newHashedPassword } },
+                { new: true } 
+            )
+            .then(users => { return res.status(200).json({ users, status: true }); })
+            .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error}`, status: false });})
+    })
+    .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error}`, status: false });})
+};
 
 module.exports.getStoryByUserId = async function getStoryByUserId (req, res) {
 

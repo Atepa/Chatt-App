@@ -5,7 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import Logo from "../assets/logo.svg";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getUserInfo, putUserInfo } from "../utils/APIRoutes";
+import { getUserInfo, putUserInfo, putUserPasswordInfo } from "../utils/APIRoutes";
 import  ColorPicker  from "../components/ColorPicker";
 
 
@@ -31,24 +31,12 @@ export default function InfoUser() {
   const [customValues, setCustomValues] = useState({
     currentPass: "",
     newPass: "",
-    userGender: "",
     confirmPass: "",
-  });
-
-  const [values, setValues] = useState({
-    userName: "",
-    userNickName: "",
-    userMail: "",
-    currentPass: "",
-    newPass: "",
-    confirmPass: "",
-    userGender: "",
-    userColor: "",
   });
 
   const toastOptions = {
     position: "bottom-right",
-    autoClose: 8000,
+    autoClose: 3000,
     pauseOnHover: true,
     draggable: true,
     theme: "dark",
@@ -100,14 +88,14 @@ export default function InfoUser() {
 			.catch(error =>{
 				toast.error(error.message, toastOptions);
 			})
-      console.log(currentUserId);
 		}
 		fetchData();
-	},[ setUserName, setuserNickName, setUserMail,setUserGender,setUserGender,setUserCreatedAt, setUserLastAccessTime, setUserColor, setCurrentUserId ]);
+	},[ setStandartValues, setUserName, setuserNickName, setUserMail,setUserGender,setUserGender,setUserCreatedAt, setUserLastAccessTime, setUserColor, setCurrentUserId ]);
 
   const handleColorChange = (color) => {
+    standartValues.userColor = color;
     setUserColor(color);
-};
+  };
 
   const handleChangeStandartData = (event) => {
     setStandartValues({ ...standartValues, [event.target.name]: event.target.value });
@@ -117,25 +105,25 @@ export default function InfoUser() {
   };
 
   const handleValidationStandartData = () => {
-    const { userName, userGender, userNickName, userColor } = values;
-      if (userName === "" || userName.length < 5 || userName.length > 15 ) {
-          toast.error("Username should be between 5 and 15 characters.", toastOptions);
-          return false;
-        } else if (userNickName === "" || userNickName.length<5 || userNickName.length >= 15) {
-            toast.error("Nickname is required.", toastOptions);
-            return false;
-        } else if (userGender === "") {
-          toast.error("Gender is required.", toastOptions);
-          return false;
-        } else if (userColor === "") {
-          toast.error("Color is required.", toastOptions);
-          return false;
+    const { userName, userGender, userNickName, userColor } = standartValues;
+      if (userName === "" || userName.length < 3 || userName.length >= 15 ) {
+        toast.error(`Username should be between 3 and 15 characters.`, toastOptions);
+        return false;
+      } else if (userNickName === "" || userNickName.length<3 || userNickName.length >= 15) {
+        toast.error("Nickname should be between 3 and 15 characters.", toastOptions);
+        return false;
+      } else if (userGender === "") {
+        toast.error("Gender is required.", toastOptions);
+        return false;
+      } else if (userColor === "") {
+        toast.error("Color is required.", toastOptions);
+        return false;
       }
       return true;
   };
 
   const handleValidationCustomData = () => {
-    const { currentPass, newPass, confirmPass } = values;
+    const { currentPass, newPass, confirmPass } = customValues;
       if (currentPass === "" || currentPass.length < 8 ) {
           toast.error("Current Password should be equal or greater than 8 characters...", toastOptions);
           return false;
@@ -161,28 +149,43 @@ export default function InfoUser() {
         standartValues,
       })
       .then(res => {
-        console.log(res);
-
+        if(res.data.status === true){
+          toast.success("Kayıt Başarılı", toastOptions);
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000); 
+        }
+        else{
+          toast.success("Başarısız err->", res.data.msg, toastOptions);
+        }
       })
       .catch(error => {
-        toast.error(error.message, toastOptions);
+        toast.error("err->",error.message, toastOptions);
       })
     }
   };
 
   const handleSubmitCustomData = async (event) => {
     event.preventDefault();
-    console.log(values);
 
     if (handleValidationCustomData()) {
-      await axios.put(`${putUserInfo}/${currentUserId}`,{
-        
+      await axios.put(`${putUserPasswordInfo}/${currentUserId}`,{
+        oldUserPassword: customValues.currentPass,
+        newUserPassword: customValues.newPass,
       })
       .then(res => {
-        console.log(res);
+        if(res.data.status === true){
+          toast.success("Kayıt Başarılı", toastOptions);
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000); 
+        }
+        else{
+          toast.success("Başarısız err->", res.data.msg, toastOptions);
+        }
       })
       .catch(error => {
-        toast.error(error.message, toastOptions);
+        toast.error("err->",error.message, toastOptions);
       })
     }
   };
@@ -238,7 +241,7 @@ export default function InfoUser() {
             <h3 style={{ color: userColor }}>Set Color</h3>
             <ColorPicker onColorChange={handleColorChange}/>
 						<h3>Gender</h3>
-            <select name="userGender" defaultValue={userGender} onChange={ (e) => handleChangeStandartData(e) }>
+            <select name="userGender" value={ standartValues.userGender } onChange={ (e) => handleChangeStandartData(e) }>
                 <option value="" disabled selected hidden>Cinsiyet Seçin</option>
                 <option value="male">Erkek</option>
                 <option value="female">Kadın</option>
@@ -268,6 +271,7 @@ export default function InfoUser() {
 								placeholder="Current Password"
 								name="currentPass"
 								onChange={(e) => handleChangeCustomData(e)}
+                autocomplete="new-password"
 						/>
             <h3>New Password</h3>
 						<input
@@ -275,6 +279,7 @@ export default function InfoUser() {
 								placeholder="New Password"
 								name="newPass"
 								onChange={(e) => handleChangeCustomData(e)}
+                autocomplete="new-password"
 						/>
             <h3>Confirm Password</h3>
 						<input
@@ -282,6 +287,7 @@ export default function InfoUser() {
 								placeholder="Confirm Password"
 								name="confirmPass"
 								onChange={(e) => handleChangeCustomData(e)}
+                autocomplete="new-password" 
 						/>
 						<button type="submit">Save New Password</button>
 						<span>

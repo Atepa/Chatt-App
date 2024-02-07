@@ -18,34 +18,30 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// kullanıcı kayıt eder
 authRouter.post('/register', registerValidate, authController.postCreateUser);
 
-// kullanıcı giriş yaptırır
 authRouter.post('/login', loginValidate, authController.postLoginUser);
 
-// kullanıcı çıkış yaptırır
 authRouter.get('/logout/:id', authController.getExitUser);
 
-// kullanıcı şifre sıfırlar
-authRouter.post('/changepassword', tokenValidate, authController.postChangePasswordUser);
+authRouter.put('/reset-password/:userId', tokenValidate, authController.postChangePasswordUser);
 
-// kullanıcı mail sıfırlar
 authRouter.post('/changemail', tokenValidate, authController.postChangeMailUser);
-//
+
 authRouter.get('/story', authController.getStories);
 
 authRouter.get('/story/:userId', authController.getStoryByUserId);
 
 authRouter.post('/add-story/user/:userId', upload.single('file'), authController.postStoryById);
-// spesifik kullanıcıyı getirir
+
 authRouter.get('/user/info/:userId', authController.getUserByUserId);
 
 authRouter.put('/user/update/:userId', authController.putUserByUserId);
+
+authRouter.put('/user/update-password/:userId', authController.putUserPasswordByUserId);
 
 authRouter.get("/allusers/:id", tokenValidate, authController.getAllUsers);
 
 authRouter.post("/setavatar/:id", tokenValidate, authController.setAvatar);
 
 module.exports = authRouter;
-
