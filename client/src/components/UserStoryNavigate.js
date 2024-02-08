@@ -3,16 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { FaEdit } from "react-icons/fa";
 import styled from "styled-components";
 
-export default function Logout() {
+export default function UserStoryNavigate() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-        navigate("/story/update");
+        navigate("/story/info");
     } catch (error) {
-        console.error("Logout failed");
+        console.error("failed");
     }
-
   };
 
   return (

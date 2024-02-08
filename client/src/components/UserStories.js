@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import styled from "styled-components";
 
 export default function HasStoryContacts({ contacts, changeChat }) {
   const [currentSelected, setCurrentSelected] = useState(undefined);
   const [currentUserImage, setCurrentUserImage] = useState(undefined);
+  const [currentUserName, setCurrentUserName] = useState(undefined);
+
+  const toastOptions = {
+    position: "bottom-right",
+    autoClose: 8000,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "dark",
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -12,8 +22,9 @@ export default function HasStoryContacts({ contacts, changeChat }) {
           localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
         );
         setCurrentUserImage(data.avatarImage);
-
+        setCurrentUserName(contacts.createdAt);
       } catch (error) {
+        toast.error(`${error.message}`,toastOptions)
         console.error("Error fetching user data:", error);
       }
     };
@@ -41,12 +52,12 @@ export default function HasStoryContacts({ contacts, changeChat }) {
                 >
                   <div className="avatar">
                     { <img
-                      src={`data:image/svg+xml;base64,${contact.avatarImage}`}
-                      alt={`${contact.userNickName}`}
+                      src={`data:image/svg+xml;base64,${currentUserImage}`}
+                      alt={`${currentUserName}`}
                     /> }
                   </div>
                   <div className="userName">
-                    <h3>{contact.userNickName}</h3>
+                    <h3>{contact.createdAt}</h3>
                   </div>
                 </div>
               );

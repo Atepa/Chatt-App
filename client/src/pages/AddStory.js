@@ -124,7 +124,7 @@ export default function  FileInput()  {
 
     axios.post( `${postStory}/${currentUser._id}` ,formData)
     .then(res => {  
-      toast.error("Kayıt Başarılı -- Yönlendirme yapılıyor...", toastOptions);
+      toast.success("Kayıt Başarılı -- Yönlendirme yapılıyor...", toastOptions);
       setTimeout(() => {
         if (fileInputRef.current) {
           fileInputRef.current.value = "";

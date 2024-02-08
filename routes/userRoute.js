@@ -32,6 +32,8 @@ authRouter.get('/story', authController.getStories);
 
 authRouter.get('/story/:userId', authController.getStoryByUserId);
 
+authRouter.delete('/story/delete/:storyId', authController.deleteStoryByStoryId);
+
 authRouter.post('/add-story/user/:userId', upload.single('file'), authController.postStoryById);
 
 authRouter.get('/user/info/:userId', authController.getUserByUserId);

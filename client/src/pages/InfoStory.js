@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getStories } from "../utils/APIRoutes";
 import AddStory from "../components/AddStoryNavigate";
-import HasStoryContacts from "../components/HasStoryContacts";
-import LogoutFunction from "../components/LogoutFunction";
+import UserStoriesContacts from "../components/UserStories";
 import Atepa from "../assets/loader.gif";
 import logo from "../assets/logo.svg";
 import InstaStory from "react-insta-stories";
-import ReactPlayer from 'react-player';
 import MainPageNavigate from "../components/MainPageNavigate";
-import UserStoryNavigate from "../components/UserStoryNavigate";
+import UserStoryDelete from "../components/UserStoryDelete";
 
-export default function Story() {
-  const [userHasStory, setUserHasStory] = useState([]);
+export default function InfoStoryStory() {
+  const [userStories, setUserStories] = useState([]);
   const [currentUser, setCurrentUser] = useState(undefined);
   const [currentStory, setCurrentStory] = useState(undefined);
+  const [currentStoryId, setCurrentStoryId] = useState(undefined);
 
   const toastOptions = {
     position: "bottom-right",
@@ -36,24 +35,22 @@ export default function Story() {
         heading: `Chatimsi`,
         subheading: 'Posted now',
         profileImage: logo,
-        // profileImage: 'https://picsum.photos/100/100',
       },
     },
   ];
 
   const navigate = useNavigate();
 
-  // kullanıcı bilgileri alındı
   useEffect(() => {
     const fetchData = async () => {
-      if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
-        navigate("/login");
-      } else {
+    //   if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
+    //     navigate("/login");
+    //   } else {
         setCurrentUser(
           await JSON.parse(
             localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
           ));
-      }
+    //   }
     };
     fetchData();
   }, [navigate]);
@@ -62,76 +59,55 @@ export default function Story() {
     const fetchData = async () => {
       if (currentUser) {
         if (currentUser.isAvatarImageSet) {
-          const  token  = await JSON.parse(
+            const  token  = await JSON.parse(
             localStorage.getItem('token')
-          );
-          const axiosInstance = axios.create({
+            );
+            const axiosInstance = axios.create({
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': token,
+                'Content-Type': 'application/json',
+                'Authorization': token,
             }
-          });
-          try {
-            const response = await axiosInstance.get(`${getStories}`);
+            });
+        await axiosInstance.get(`${getStories}/${currentUser._id}`)
+        .then( response => {
             if (response.status !== 200) {
-              toast.error(response.data.msg || 'Bir hata oluştu', toastOptions);
+                toast.error(`Hata: ${response.data.msg}`, toastOptions);
             } else {
-              setUserHasStory(response.data.response);
+                setUserStories(response.data.response);
             }
-          } catch (error) {
-            // if(error.response.status === 401) {
-              const success = await LogoutFunction();
-              if (success) {
-                toast.error("oturumun süresi bitmiştir", toastOptions);
-                navigate("/login");
-              } else {
-                console.error("Logout failed");
-              }
-              console.log(error);
-            // }
-          }
+        })
+        .catch( error => {
+            if(error.response?.status === 404){
+                toast.error(`error-> ${error.response.data.msg}`, toastOptions)
+                setTimeout(() => {
+                    navigate("/story/upload");
+
+                }, 3000);
+            }
+            
+            else
+                toast.error(`error -> ${ error.message}`,toastOptions);
+        })
         } else {
           navigate("/setAvatar");
         }
       }
     };
     fetchData();
-  }, [currentUser, navigate]);
+  }, [currentUser, navigate, setUserStories]);
 
 
-  const handleStoryChange = async (story) => {
-
-    await axios.get(`${getStories}/${story._id}`)
-    .then( res => {
-        const paths = res.data.response.map(story => `${process.env.REACT_APP_URL}${story.storyPath}`);
-        const userNames = res.data.response.map(story => `${story.senderUserNickName}`);
-        const duration = res.data.response.map(story => `${story.duration}`);
-        const createdAt = res.data.response.map(story => {
-        const dateObject = new Date(story.createdAt);
-        const saat = dateObject.getHours();
-        const dakika = dateObject.getMinutes();
-        return `${saat}:${dakika}`;
-        });
-        const updatedStor = paths.map((path, index) => {
-          return {
-            url: path,
-            duration: duration[index] || 5000, // stor'daki değeri al, eğer yoksa varsayılan değeri kullan
-            header: {
-              heading: userNames[index],
-              subheading: createdAt[index],
-            },
-          };
-        });
-        setCurrentStory(updatedStor);  
-    })
-    .catch(error => {
-      console.log(error);
-      if(error.response?.status === 404)
-        toast.error(`error-> ${error.response.data.msg}`, toastOptions)
-      else 
-        toast.error(`error -> ${ error.message}`,toastOptions);
-    })   
-  };
+    const handleStoryChange = async (story) => { 
+        setCurrentStoryId(story._id)
+        const modifiedStory = [{
+            duration: story.duration,
+            header: story.senderUserNickName,
+            subheading: story.createdAt,
+            url: `${process.env.REACT_APP_URL}${story.storyPath}`
+        }];
+        console.log(modifiedStory);
+        setCurrentStory(modifiedStory);
+    };
 
   return (
     <>
@@ -142,16 +118,16 @@ export default function Story() {
           <MainPageNavigate />
           <h></h>
           <h></h>
-          <h>Güncelle</h>
-          <UserStoryNavigate />
+          <h>Seçileni Sil</h>
+          <UserStoryDelete storyId={currentStoryId} />
           <h></h>
           <h></h>
           <h>Story Ekle</h>
           <AddStory />
         </form>
         <form className="users-has-story">
-          <h>Arkadaşların</h> 
-          <HasStoryContacts contacts={userHasStory} changeChat={handleStoryChange}/>
+          <h>Storylerin</h> 
+          <UserStoriesContacts contacts={userStories} changeChat={handleStoryChange}/>
         </form >
         <form className="users-story">
         <h>Story</h>

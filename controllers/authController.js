@@ -21,7 +21,7 @@ exports.postCreateUser = async function postCreateUser(req, res) {
             return res.json({ msg: "Nickname already used", status: false, body: req.body });
     })
     .catch( error => {
-        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
+        return res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
     })
         
     const istanbulTime = new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" });
@@ -35,7 +35,7 @@ exports.postCreateUser = async function postCreateUser(req, res) {
         res === 0 ? IsAdmin = true : IsAdmin = false; 
     })
     .catch( error => {
-        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
+        return res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
     })
 
     checkUser = new UserModel({
@@ -64,7 +64,7 @@ exports.postCreateUser = async function postCreateUser(req, res) {
     })
     .catch( error => {
         delete checkUser.userPassword;
-        return res.status(404).json({ msg: `Kayıt Başarısız -- ${error.message}`, checkUser, status: false })
+        return res.status(500).json({ msg: `Kayıt Başarısız -- ${error.message}`, checkUser, status: false })
 
     })
 };
@@ -128,7 +128,7 @@ exports.postChangePasswordUser = async function postChangePasswordUser(req, res)
         return res.json({ status: true, user});    
     })
     .catch( error=> {
-        return res.status(404).json({ msg: `Kullanıcı Bulunamadı -- ${error.message}`, status: false })
+        return res.status(500).json({ msg: `Kullanıcı Bulunamadı -- ${error.message}`, status: false })
     })
 };
 
@@ -143,7 +143,7 @@ exports.postChangeMailUser = async function postChangeMailUser(req, res) {
         delete user.userPassword;
         return res.json({ status: true, user});    })
     .catch( error=> {
-        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
+        return res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
     })
 };
 
@@ -159,7 +159,7 @@ module.exports.getAllUsers = async function getAllUsers (req, res) {
         return res.status(200).json({ response, status: true });
     })
     .catch( error=> {   
-        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
+        return res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
     })
 };
 
@@ -176,25 +176,70 @@ module.exports.setAvatar = async function setAvatar (req, res) {
 
     })
     .catch( error=> {
-        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
+        return res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
         
     })
 };
 
 module.exports.getStories = async function getStories (req, res) {
-    await UserModel.find({ hasStory: true}).select([
+    await UserModel.find({ hasStory: true }).select([
         "avatarImage",
         "userNickName",
         "_id",
         "hasStory",
     ])
     .then(response => {
-        return res.status(200).json({ response, status: true });
+        if(response.length > 0)
+            return res.status(200).json({ response, status: true });
+        else 
+            return res.status(200).json({ msg: `Kullanıcı Bir Story'e Sahip Değil`, status: true });
     })
     .catch( error=> {
-        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
+        return res.status(500).json({ msg: `Server Error -- ${error.message}`, status: false })
     })
 };
+
+module.exports.getStoryByUserId = async function getStoryByUserId (req, res) {
+
+    await StoryModel.find({ senderUserId: req.params.userId }).select([
+        "_id",
+        "senderUserId",
+        "senderUserAvatarImage",
+        "senderUserNickName",
+        "storyPath",
+        "duration",
+        "createdAt",
+        "isActive",
+    ])
+    .then(response => {
+        if(response.length === 0)
+            return res.status(404).json({ msg:"Kullanıcı Bir Story'ye Sahip Değil.", status: true });
+        else
+            return res.status(200).json({ response, status: true });
+    })
+    .catch(error => {
+        return res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });
+    })
+};
+
+module.exports.deleteStoryByStoryId = async function deleteStoryByStoryId (req, res) {
+
+    console.log("istek geldi");
+    await StoryModel.findOneAndDelete({_id: req.params.storyId} )
+    .then(async response => {
+        if(response.length === 0){
+            console.log(response);
+            return res.status(404).json({ msg:"Story Bulunamadı.", response, status: true });
+        }
+        else{
+            return res.status(200).json({ msg:"Başarıyla Silindi", status: true });
+        }
+    })
+    .catch(error => {
+        return res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });
+    })
+};
+
 
 module.exports.getUserByUserId = async function getUserByUserId (req, res) {
     await UserModel.find({ _id: req.params.userId}).select([
@@ -209,7 +254,7 @@ module.exports.getUserByUserId = async function getUserByUserId (req, res) {
         "avatarImage"
     ])
     .then(response => { return res.status(200).json({ response, status: true }); })
-    .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });})
+    .catch( (error) => { return res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });})
 };
 
 module.exports.putUserByUserId = async function putUserByUserId (req, res) {    
@@ -239,27 +284,7 @@ module.exports.putUserPasswordByUserId = async function putUserPasswordByUserId 
             .then(response => { return res.status(200).json({ response, status: true }); })
             .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });})
     })
-    .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });})
-};
-
-module.exports.getStoryByUserId = async function getStoryByUserId (req, res) {
-
-    await StoryModel.find({ senderUserId: req.params.userId }).select([
-        "_id",
-        "senderUserId",
-        "senderUserAvatarImage",
-        "senderUserNickName",
-        "storyPath",
-        "duration",
-        "createdAt",
-        "isActive",
-    ])
-    .then(response => {
-        return res.status(200).json({ response, count: response.length, status: true });
-    })
-    .catch(error => {
-        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });
-    })
+    .catch( (error) => { return res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });})
 };
 
 module.exports.postStoryById = async function postStoryById (req, res) {
@@ -287,7 +312,7 @@ module.exports.postStoryById = async function postStoryById (req, res) {
         return res.status(200).json({status:true, response});
     })
     .catch(error => {
-        return res.status(404).json({status:false, msg:`Kayıt Başarısız -- ${error.message}`});
+        return res.status(500).json({status:false, msg:`Kayıt Başarısız -- ${error.message}`});
     })   
     
 };

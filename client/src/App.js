@@ -9,10 +9,9 @@ import AdminPanel from "./pages/admin/AdminPanel";
 import AdminGetUser from "./pages/admin/AdminGetUser";
 import AddStory from "./pages/AddStory";
 import Story from "./pages/Story";
+import InfoStory from "./pages/InfoStory";
 import InfoUser from "./pages/InfoUser";
 import PrivateRoute from "./middleware/TokenController";
-
-
 
 export default function App() {
   return (
@@ -24,6 +23,7 @@ export default function App() {
         <Route path="admin" element={<AdminLogin />} />
         <Route path="admin/panel/:page" element={<AdminPanel />} />
         <Route path="admin/user/:userId" element={<AdminGetUser />} />
+        <Route path="story/info" element={<InfoStory />} /> 
         <Route path="story" element={<Story />} />
         <Route path="story/upload" element={<AddStory />} /> 
         <Route path="/" element={<Chat />} />
