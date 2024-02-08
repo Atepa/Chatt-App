@@ -21,8 +21,6 @@ export default function Contacts({ contacts, changeChat }) {
         );
         setCurrentUserName(data.userName);
         setCurrentUserImage(data.avatarImage);
-        console.log(currentUserName)
-        console.log(currentUserImage)
 
       } catch (error) {
         console.error("Error fetching user data:", error);

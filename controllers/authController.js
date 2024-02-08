@@ -12,20 +12,32 @@ const { response } = require('express');
 exports.postCreateUser = async function postCreateUser(req, res) {
 
     const {userMail, userPassword, userName, userNickName, userColor, userGender} = req.body;
+    let checkUser = await UserModel.findOne({ $or: [{ userNickName:userNickName }, { userMail:userMail }] })
+    .then( res => {
+        if( checkUser && checkUser.userMail == userMail)
+            return res.json({ msg: "Email already used", status: false, body: req.body });
 
-    let checkUser = await UserModel.findOne({ $or: [{ userNickName:userNickName }, { userMail:userMail }] });
-    if( checkUser && checkUser.userMail == userMail)
-        return res.json({ msg: "Email already used", status: false, body: req.body });
-
-    if(checkUser && checkUser.userNickName == userNickName)
-        return res.json({ msg: "Nickname already used", status: false, body: req.body });
+        if(checkUser && checkUser.userNickName == userNickName)
+            return res.json({ msg: "Nickname already used", status: false, body: req.body });
+    })
+    .catch( error => {
+        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
+    })
         
     const istanbulTime = new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" });
     const istanbulDate = new Date(istanbulTime);
     istanbulDate.setHours(istanbulDate.getHours() + 3);
 
+    const IsAdmin = false;
     const hashedPassword = await bcrypt.hash(userPassword, 10);
-    await UserModel.countDocuments({userIsActive:true}) === 0 ? IsAdmin = true : IsAdmin = false; 
+    await UserModel.countDocuments({userIsActive:true})
+    .then( res => {
+        res === 0 ? IsAdmin = true : IsAdmin = false; 
+    })
+    .catch( error => {
+        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
+    })
+
     checkUser = new UserModel({
         userActive:1,
         userIsAdmin: IsAdmin,
@@ -44,13 +56,17 @@ exports.postCreateUser = async function postCreateUser(req, res) {
         userLastAccessTime: istanbulDate,
     });
 
-    const result = await checkUser.save();
-    if(result) {
+    await checkUser.save()
+    .then( res => {
         delete checkUser.userPassword;
+        delete res.userPassword;
         return res.json({status:true, result});
-    }
-    delete checkUser.userPassword;
-    return res.json({status:false, msg:'Kayıt başarısız.', checkUser});
+    })
+    .catch( error => {
+        delete checkUser.userPassword;
+        return res.status(404).json({ msg: `Kayıt Başarısız -- ${error.message}`, checkUser, status: false })
+
+    })
 };
 
 exports.postLoginUser = async function postLoginUser(req, res) {
@@ -83,7 +99,6 @@ exports.postLoginUser = async function postLoginUser(req, res) {
         return res.status(200).json({ status: true, user, X_Access_Token: token});
     }
 
-
     delete user.userPassword;
     return res.json({ status: false, user});
 };
@@ -107,77 +122,78 @@ exports.postChangePasswordUser = async function postChangePasswordUser(req, res)
         { _id: req.params.userId },
         { $set: { userPassword: hashedPassword } },
         { new: true } 
-    );
-
-    if(user){
+    )
+    .then(res => {
         delete user.userPassword;
-        return res.json({ status: true, user});
-    }
-
-    return res.json({ msg:'User not found', status: false, user});
+        return res.json({ status: true, user});    
+    })
+    .catch( error=> {
+        return res.status(404).json({ msg: `Kullanıcı Bulunamadı -- ${error.message}`, status: false })
+    })
 };
 
 exports.postChangeMailUser = async function postChangeMailUser(req, res) {
     const { userMail, newMail } = req.body;
-    const user = await UserModel.findOneAndUpdate(
+    await UserModel.findOneAndUpdate(
         { userMail: userMail },
         { $set: { userMail: newMail } },
         { new: true } 
-    );
-
-    if(!user)
-        return res.json({ msg:'User not found', status: false, user});
-    
-    delete user.userPassword;
-    return res.json({ status: true, user});
-    
+    )
+    .then(res => {
+        delete user.userPassword;
+        return res.json({ status: true, user});    })
+    .catch( error=> {
+        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
+    })
 };
 
 module.exports.getAllUsers = async function getAllUsers (req, res) {
-        const users = await UserModel.find({ _id: { $ne: req.params.id } }).select([
-          "userMail",
-          "userNickName",
-          "avatarImage",
-          "hasStory",
-          "_id",
-        ]);
-      
-        if (!users) 
-          return res.status(404).json({ msg: 'Kayıt Bulunamadı', status: false });
-        
-        return res.status(200).json({ users, status: true });
+    await UserModel.find({ _id: { $ne: req.params.id } }).select([
+        "userMail",
+        "userNickName",
+        "avatarImage",
+        "hasStory",
+        "_id",
+    ])
+    .then(response => {
+        return res.status(200).json({ response, status: true });
+    })
+    .catch( error=> {   
+        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
+    })
 };
 
 module.exports.setAvatar = async function setAvatar (req, res) {
-    try{
-        const userId = req.params.id;
-        const avatarImage = req.body.avatarImage;
-        const userData = await usersModel.findByIdAndUpdate(
-            {_id: userId},
-            { $set: { isAvatarImageSet: true, avatarImage: avatarImage, } },
-            { new: true }
-        );
-        if(!userData)
-         return res.status(404).json({ msg: 'Something went wrong', status: false })
+    const userId = req.params.id;
+    const avatarImage = req.body.avatarImage;
+    await usersModel.findByIdAndUpdate(
+        {_id: userId},
+        { $set: { isAvatarImageSet: true, avatarImage: avatarImage, } },
+        { new: true }
+    )
+    .then(response => {
+        return res.status(200).json({ status: true, response });
 
-         return res.status(200).json({ status: true, userData });
-    }catch(error){
-        return res.status(404).json({ status:false , msg: error.message});
-    }
+    })
+    .catch( error=> {
+        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
+        
+    })
 };
 
 module.exports.getStories = async function getStories (req, res) {
-    const users = await UserModel.find({ hasStory: true}).select([
+    await UserModel.find({ hasStory: true}).select([
         "avatarImage",
         "userNickName",
         "_id",
         "hasStory",
-    ]);
-  
-    if (!users) 
-      return res.status(404).json({ msg: 'Kayıt Bulunamadı', status: false });
-
-    return res.status(200).json({ users, status: true });
+    ])
+    .then(response => {
+        return res.status(200).json({ response, status: true });
+    })
+    .catch( error=> {
+        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false })
+    })
 };
 
 module.exports.getUserByUserId = async function getUserByUserId (req, res) {
@@ -192,8 +208,8 @@ module.exports.getUserByUserId = async function getUserByUserId (req, res) {
         "isAvatarImageSet",
         "avatarImage"
     ])
-    .then(users => { return res.status(200).json({ users, status: true }); })
-    .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error}`, status: false });})
+    .then(response => { return res.status(200).json({ response, status: true }); })
+    .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });})
 };
 
 module.exports.putUserByUserId = async function putUserByUserId (req, res) {    
@@ -203,7 +219,7 @@ module.exports.putUserByUserId = async function putUserByUserId (req, res) {
         { $set: standartValues }, 
         { new: true } 
     ) 
-    .then(users => { return res.status(200).json({ users, status: true }); })
+    .then(response => { return res.status(200).json({ response, status: true }); })
     .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error}`, status: false });})
 };
 
@@ -211,24 +227,24 @@ module.exports.putUserPasswordByUserId = async function putUserPasswordByUserId 
     const { oldUserPassword ,newUserPassword } = req.body;
     const newHashedPassword = await bcrypt.hash(newUserPassword, 10);
     await UserModel.find({ _id: req.params.userId }).select(["userPassword"])
-    .then(async user => {     
-        const hashedPassword = await bcrypt.compare(oldUserPassword, user[0].userPassword);
+    .then(async response => {     
+        const hashedPassword = await bcrypt.compare(oldUserPassword, response[0].userPassword);
         if(!hashedPassword) 
-            return res.status(400).json({ msg: `Mevcut Şifreniz Doğru Değil`, status: false});
+            return res.status(200).json({ msg: `Mevcut Şifreniz Doğru Değil`, status: false});
             await UserModel.findOneAndUpdate(
                 { _id: req.params.userId },
                 { $set: { userPassword: newHashedPassword } },
                 { new: true } 
             )
-            .then(users => { return res.status(200).json({ users, status: true }); })
-            .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error}`, status: false });})
+            .then(response => { return res.status(200).json({ response, status: true }); })
+            .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });})
     })
-    .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error}`, status: false });})
+    .catch( (error) => { return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });})
 };
 
 module.exports.getStoryByUserId = async function getStoryByUserId (req, res) {
 
-    const story = await StoryModel.find({ senderUserId: req.params.userId }).select([
+    await StoryModel.find({ senderUserId: req.params.userId }).select([
         "_id",
         "senderUserId",
         "senderUserAvatarImage",
@@ -237,20 +253,27 @@ module.exports.getStoryByUserId = async function getStoryByUserId (req, res) {
         "duration",
         "createdAt",
         "isActive",
-    ]);
-    if (!story) 
-      return res.status(404).json({ msg: 'Kayıt Bulunamadı', status: false });
-
-    return res.status(200).json({ story, count: story.length, status: true });
+    ])
+    .then(response => {
+        return res.status(200).json({ response, count: response.length, status: true });
+    })
+    .catch(error => {
+        return res.status(404).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });
+    })
 };
 
 module.exports.postStoryById = async function postStoryById (req, res) {
-    const user = await UserModel.findOneAndUpdate(
+    await UserModel.findOneAndUpdate(
         { _id: req.params.userId },
         { $set: { hasStory: true } },
-        { new: true } 
-    );
-    user? delete user.userPassword : null ;
+        { new: false } 
+    )
+    .then( response => {
+        response? delete response.userPassword : null ;
+    })
+    .catch( error => { 
+        return res.status(404).json({ status:false, msg:`Kayıt Başarısız -- ${error.message}`}) 
+    })
     const Story = new storyModel({
         senderUserId: req.params.userId,
         senderUserAvatarImage: req.body.senderUserAvatarImage,
@@ -259,13 +282,12 @@ module.exports.postStoryById = async function postStoryById (req, res) {
         storyPath: req.file.path,
         size: req.file.size,
     });
-
     await Story.save()
     .then(response => {
         return res.status(200).json({status:true, response});
     })
     .catch(error => {
-        return res.status(404).json({status:false, msg:'Kayıt başarısız.',error});
+        return res.status(404).json({status:false, msg:`Kayıt Başarısız -- ${error.message}`});
     })   
     
 };

@@ -59,16 +59,15 @@ export default function InfoUser() {
       setCurrentUserId(users._id)
 			await axios.get(`${getUserInfo}/${users._id}`)
 			.then(res => { 
-	
 				if (res.data.status === false) {
 					toast.error(res.data.msg, toastOptions);
 				}
 				else {
 					localStorage.setItem(
 						process.env.REACT_APP_LOCALHOST_KEY,
-						JSON.stringify(res.data.users[0])
+						JSON.stringify(res.data.response[0])
 					);
-					const userData = res.data.users[0];
+					const userData = res.data.response[0];
 					setUserName(userData.userName);
 					setuserNickName(userData.userNickName);
 					setUserMail(userData.userMail);
@@ -156,11 +155,11 @@ export default function InfoUser() {
           }, 3000); 
         }
         else{
-          toast.success("Başarısız err->", res.data.msg, toastOptions);
+          toast.error(`Başarısız ${res.data.msg}`, toastOptions);
         }
       })
       .catch(error => {
-        toast.error("err->",error.message, toastOptions);
+        toast.error(`err --> ${error.message}`, toastOptions);
       })
     }
   };
@@ -181,11 +180,11 @@ export default function InfoUser() {
           }, 3000); 
         }
         else{
-          toast.success("Başarısız err->", res.data.msg, toastOptions);
+          toast.error(`Başarısız ${res.data.msg}`, toastOptions);
         }
       })
       .catch(error => {
-        toast.error("err->",error.message, toastOptions);
+        toast.error(`err --> ${error.message}`, toastOptions);
       })
     }
   };

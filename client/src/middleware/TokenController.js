@@ -1,15 +1,31 @@
-// import { jwtVerify } from 'jose';
+// import { React, useState, useEffect } from "react";
+// import {  Navigate, useNavigate  } from "react-router-dom";
 
-// const token = localStorage.getItem('token');
+// const PrivateRoute =  ({ element: Element, ...props }) => {
+//   const [currentUser, setCurrentUser] = useState(undefined);
+//   const navigate = useNavigate();
 
-// const publicKey = 'privateappkey'; // Burada kullanılan anahtar, JWT'nin imzalanmış olduğu anahtar olmalıdır.
+//   useEffect(() => {
+//     try{
+//         const token = localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY);
 
-// jwtVerify(token, publicKey)
-//   .then((decodedToken) => {
-//     console.log('Decoded Token:', decodedToken);
-//     // JWT geçerli
-//   })
-//   .catch((error) => {
-//     console.error('Token validation failed:', error.message);
-//     // JWT geçerli değil
-//   });
+//         if (localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
+//             console.log("token");
+//             <Element {...props} />
+//         } else {
+//             console.log("token");
+//             <Navigate to="/login" replace />
+//         }
+//     }catch( error){
+//         console.log(error);
+//     }
+
+   
+//   }, [currentUser]);
+
+//    currentUser ? console.log("var") : console.log("yok");
+//    console.log(currentUser);
+
+// };
+
+// export default PrivateRoute;

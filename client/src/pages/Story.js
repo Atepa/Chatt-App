@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getStories } from "../utils/APIRoutes";
@@ -58,7 +58,6 @@ export default function Story() {
     fetchData();
   }, [navigate]);
 
-  
   useEffect(() => {
     const fetchData = async () => {
       if (currentUser) {
@@ -77,7 +76,7 @@ export default function Story() {
             if (response.status !== 200) {
               toast.error(response.data.msg || 'Bir hata oluştu', toastOptions);
             } else {
-              setUserHasStory(response.data.users);
+              setUserHasStory(response.data.response);
             }
           } catch (error) {
             // if(error.response.status === 401) {
@@ -104,10 +103,11 @@ export default function Story() {
 
     await axios.get(`${getStories}/${story._id}`)
     .then( res => {
-      const paths = res.data.story.map(story => `${process.env.REACT_APP_URL}${story.storyPath}`);
-      const userNames = res.data.story.map(story => `${story.senderUserNickName}`);
-      const duration = res.data.story.map(story => `${story.duration}`);
-      const createdAt = res.data.story.map(story => {
+      console.log(res);
+      const paths = res.data.response.map(story => `${process.env.REACT_APP_URL}${story.storyPath}`);
+      const userNames = res.data.response.map(story => `${story.senderUserNickName}`);
+      const duration = res.data.response.map(story => `${story.duration}`);
+      const createdAt = res.data.response.map(story => {
         const dateObject = new Date(story.createdAt);
         const saat = dateObject.getHours();
         const dakika = dateObject.getMinutes();
@@ -133,16 +133,16 @@ export default function Story() {
       <FormContainer>
       <div className="forms-container">
         <form className="add-story-form">
-          <h>Story Ekle</h>
-          <AddStory />
+          <h>Anasayfa</h>
+          <MainPageNavigate />
           <h></h>
           <h></h>
           <h>Güncelle</h>
           <UserStoryNavigate />
           <h></h>
           <h></h>
-          <h>Anasayfa</h>
-          <MainPageNavigate />
+          <h>Story Ekle</h>
+          <AddStory />
         </form>
         <form className="users-has-story">
           <h>Arkadaşların</h> 
@@ -177,6 +177,9 @@ export default function Story() {
           />
         </form >
       </div>
+      <span>
+        <Link to="/">Go Chat</Link>
+      </span>
       </FormContainer>
       <ToastContainer />
     </>
@@ -267,6 +270,15 @@ const FormContainer = styled.div`
     &:focus {
       border: 0.1rem solid #997af0;
       outline: none;
+    }
+  }
+  span {
+    color: white;
+    text-transform: uppercase;
+    a {
+      color: #4aaaff;
+      text-decoration: none;
+      font-weight: bold;
     }
   }
   

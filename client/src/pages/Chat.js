@@ -51,8 +51,6 @@ export default function Chat() {
   useEffect(() => {
     const fetchData = async () => {
       if (currentUser) {
-        console.log(currentUser);
-
         if (currentUser.isAvatarImageSet) {
           const token = await JSON.parse(
             localStorage.getItem('token')
@@ -66,11 +64,10 @@ export default function Chat() {
 
           try {
             const response = await axiosInstance.get(`${allUsersRoute}/${currentUser._id}`);
-
             if (response.status !== 200) {
               toast.error(response.data.msg || 'Bir hata oluştu', toastOptions);
             } else {
-              setContacts(response.data.users);
+              setContacts(response.data.response);
             }
           } catch (error) {
             if(error.response.status === 401) {
@@ -80,10 +77,9 @@ export default function Chat() {
                 setTimeout(() => {
                   navigate("/login");
                 }, 3000); 
-                console.error("Logout failed");
               }
             }
-            toast.error("oturumun süresi bitmiştir", toastOptions);
+            toast.error("Çıkış Yaspıldı", toastOptions);
           }
         } else {
           navigate("/setAvatar");

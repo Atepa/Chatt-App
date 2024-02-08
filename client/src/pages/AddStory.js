@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import styled from "styled-components";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { postStory } from "../utils/APIRoutes";
 
 
@@ -132,7 +132,10 @@ export default function  FileInput()  {
         navigate("/story");
       }, 3000); 
     })
-    .catch(er => console.log(er))
+    .catch(err =>{
+      toast.error(`Kayıt Başarısız error-> ${err.errorMessage}`, toastOptions);
+
+    })
   }
 
   return (
@@ -149,6 +152,11 @@ export default function  FileInput()  {
           {videoPreview && <video controls width="300" src={videoPreview} />}
         <button> upload </button>
         </form>
+      <span>
+        <Link to="/">-Go Chat-</Link>{"     "}
+        <span style={{ marginRight: "7rem" }}></span>
+        <Link to="/story">Go Story Page</Link>
+      </span>
       </FormContainer>
       <ToastContainer />
     </>
@@ -164,8 +172,7 @@ const FormContainer = styled.div`
   gap: 1rem;
   align-items: center;
   background-color: #131324;
-  overflow-y: auto; /* Yatay kaydırma çubuğunu ekler */
-  overflow-x: auto; /* Yatay kaydırma çubuğunu ekler */
+  overflow: auto;
 
   .brand {
     display: flex;
