@@ -5,18 +5,12 @@ import { useNavigate, Link } from "react-router-dom";
 import Logo from "../assets/logo.svg";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { loginRoute } from "../utils/APIRoutes";
+import { forgotPassword } from "../utils/APIRoutes";
 
-export default function Login() {
-  // const userAgent = navigator.userAgent; // Kullanıcının tarayıcı ve işletim sistemi bilgisi
-  // const platform = navigator.platform; // Kullanıcının işletim sistemi platformu (Windows, macOS, Linux, vs.)
-
-  // const userLanguage = navigator.language; // Kullanıcının tarayıcı dil bilgisi
-
-  // console.log("user",userAgent,"platform",platform,"lang",userLanguage);
+export default function ForgotPassword() {
 
   const navigate = useNavigate();
-  const [values, setValues] = useState({ userMail: "", userPassword: "" });
+  const [values, setValues] = useState({ userMail: "" });
   const toastOptions = {
     position: "bottom-right",
     autoClose: 8000,
@@ -31,50 +25,42 @@ export default function Login() {
   }, []);
 
   const handleChange = (event) => {
+    console.log(values);
     setValues({ ...values, [event.target.name]: event.target.value });
   };
 
   const validateForm = () => {
-    const { userMail, userPassword } = values;
+    const { userMail } = values;
+    console.log(userMail);
+
     if (userMail === "") {
       toast.error("Email and Password is required.", toastOptions);
       return false;
-    } else if (userPassword === "") {
-      toast.error("Email and Password is required.", toastOptions);
-      return false;
-    }
+    } 
     return true;
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (validateForm()) {
-      const { userMail, userPassword } = values;
-      const response = await axios.post(loginRoute, {
-        userMail,
-        userPassword,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
- 
-      const data = response.data;
-      if (data.status === false) {
-        toast.error(data.msg, toastOptions);
-      }
-      if (data.status === true) {
-        const token = data.X_Access_Token; // 'Authorization' yerine 'authorization' olabilir
-        localStorage.setItem(
-          process.env.REACT_APP_LOCALHOST_KEY,
-          JSON.stringify(data.user),
-        );
-        localStorage.setItem(
-          "token",
-          JSON.stringify(token),
-        );
-      navigate("/");
-      }
+        const { userMail } = values;
+        console.log(userMail)
+        await axios.post(`${forgotPassword}`, { 
+          userMail
+        })
+        .then( res => {
+          toast.success(`${res.data.msg}`,toastOptions);
+        })
+        .catch ( error => {
+          if(error.response?.status === 404)
+          {
+            toast.error(`Bu Emaile Sahip Bir Kullanıcı Bulunamadı`,toastOptions);
+
+          }
+          else{
+            toast.error(`Bir Şeyler Ters Gitti`,toastOptions);
+          }
+        })
     }
   };
   
@@ -93,18 +79,9 @@ export default function Login() {
             onChange={(e) => handleChange(e)}
             min="3"
           />
-          <input
-            type="password"
-            placeholder="userPassword"
-            name="userPassword"
-            onChange={(e) => handleChange(e)}
-          />
-          <button type="submit">Log In</button>
+          <button type="submit">Mail Gönder</button>
           <span>
-            Don't have an account ? <Link to="/register">Create One.</Link>
-          </span>
-          <span>
-           <Link to="/account/password/reset"> Forgot Password ? </Link>
+            <Link to="/login">Login Page</Link>
           </span>
         </form>
       </FormContainer>

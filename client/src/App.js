@@ -11,6 +11,9 @@ import AddStory from "./pages/AddStory";
 import Story from "./pages/Story";
 import InfoStory from "./pages/InfoStory";
 import InfoUser from "./pages/InfoUser";
+import ForgotPassword from "./pages/ForgotPassword";
+import RefreshPassword from "./pages/RefreshPassword";
+
 import PrivateRoute from "./middleware/TokenController";
 
 export default function App() {
@@ -28,6 +31,8 @@ export default function App() {
         <Route path="story/upload" element={<AddStory />} /> 
         <Route path="/" element={<Chat />} />
         <Route path="/user/info" element={<InfoUser />} />
+        <Route path="/account/password/reset" element={<ForgotPassword />} />
+        <Route path="/account/password/reset/:userId" element={<RefreshPassword />} />
         {/* <Route path="/story/upload" element={<PrivateRoute element={<AddStory />} />} /> */}
         
       </Routes>

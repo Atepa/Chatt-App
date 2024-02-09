@@ -1,5 +1,7 @@
 export const host = "http://127.0.0.1:8081";
 export const loginRoute = `${host}/api/auth/login`;
+export const forgotPassword = `${host}/api/auth/forgot/password`;
+export const RefreshPassword = `${host}/api/auth/Refresh/password`;
 export const registerRoute = `${host}/api/auth/register`;
 export const logoutRoute = `${host}/api/auth/logout`;
 export const allUsersRoute = `${host}/api/auth/allusers`;

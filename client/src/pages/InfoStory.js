@@ -21,7 +21,7 @@ export default function InfoStoryStory() {
 
   const toastOptions = {
     position: "bottom-right",
-    autoClose: 8000,
+    autoClose: 10000,
     pauseOnHover: true,
     draggable: true,
     theme: "dark",
@@ -78,13 +78,10 @@ export default function InfoStoryStory() {
         })
         .catch( error => {
             if(error.response?.status === 404){
-                toast.error(`error-> ${error.response.data.msg}`, toastOptions)
-                setTimeout(() => {
-                    navigate("/story/upload");
-
-                }, 3000);
+                // setTimeout(() => {
+                //   toast.error(`error-> ${error.response.data.msg}`, toastOptions)
+                // }, 3000);
             }
-            
             else
                 toast.error(`error -> ${ error.message}`,toastOptions);
         })

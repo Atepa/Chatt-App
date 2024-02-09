@@ -28,6 +28,8 @@ authRouter.put('/reset-password/:userId', tokenValidate, authController.postChan
 
 authRouter.post('/changemail', tokenValidate, authController.postChangeMailUser);
 
+authRouter.post('/forgot/password', authController.postForgotPassword);
+
 authRouter.get('/story', authController.getStories);
 
 authRouter.get('/story/:userId', authController.getStoryByUserId);

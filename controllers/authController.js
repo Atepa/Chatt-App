@@ -3,7 +3,7 @@ const UserModel = require('../models/userModel');
 const StoryModel = require('../models/storyModel');
 const AccessUsersStoryModel = require('../models/accessUserStory');
 const upload = require("../middleware/uploadMulter");
-
+const  postRabbitMqHelper = require("../helper/postRabbitMq");
 const bcrypt = require('bcrypt');
 const storyModel = require('../models/storyModel');
 const { response } = require('express');
@@ -132,6 +132,45 @@ exports.postChangePasswordUser = async function postChangePasswordUser(req, res)
     })
 };
 
+exports.postChangePasswordUser = async function postChangePasswordUser(req, res) {
+    const { userPassword} = req.body;
+    const hashedPassword= await bcrypt.hash(userPassword, 10);
+    const user = await UserModel.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $set: { userPassword: hashedPassword } },
+        { new: true } 
+    )
+    .then(res => {
+        delete user.userPassword;
+        return res.json({ status: true, user});    
+    })
+    .catch( error=> {
+        return res.status(500).json({ msg: `Kullanıcı Bulunamadı -- ${error.message}`, status: false })
+    })
+};
+
+exports.postForgotPassword = async function postForgotPassword(req, res) {
+    const  {userMail} =req.body; 
+    await UserModel.findOne({ userMail: userMail }).select(["_id"])
+    .then( async response => {
+        if(response){
+            const rabbitProducer = await postRabbitMqHelper(userMail, response._id)  
+            if( rabbitProducer){
+                return res.status(200).json({ msg: "Mail Yollandı", status: true});
+            }
+            else{
+                return res.status(500).json({ msg: "Internal Server Error", status: false});
+            }
+        }
+        else{
+            return res.status(404).json({ msg: "Kullanıcı Bulunamadı", status: false});
+        }
+    })
+    .catch( error=> {
+        return res.status(500).json({ msg: `Internal Server Error -- ${error.message}`, status: false })
+    })
+};
+
 exports.postChangeMailUser = async function postChangeMailUser(req, res) {
     const { userMail, newMail } = req.body;
     await UserModel.findOneAndUpdate(
@@ -224,11 +263,9 @@ module.exports.getStoryByUserId = async function getStoryByUserId (req, res) {
 
 module.exports.deleteStoryByStoryId = async function deleteStoryByStoryId (req, res) {
 
-    console.log("istek geldi");
     await StoryModel.findOneAndDelete({_id: req.params.storyId} )
     .then(async response => {
         if(response.length === 0){
-            console.log(response);
             return res.status(404).json({ msg:"Story Bulunamadı.", response, status: true });
         }
         else{
@@ -239,7 +276,6 @@ module.exports.deleteStoryByStoryId = async function deleteStoryByStoryId (req, 
         return res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false });
     })
 };
-
 
 module.exports.getUserByUserId = async function getUserByUserId (req, res) {
     await UserModel.find({ _id: req.params.userId}).select([

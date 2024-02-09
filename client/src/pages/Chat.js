@@ -70,7 +70,7 @@ export default function Chat() {
               setContacts(response.data.response);
             }
           } catch (error) {
-            if(error.response.status === 401) {
+            if(error.response?.status === 401) {
               const success = await LogoutFunction();
               if (success) {
                 toast.error("oturumun süresi bitmiştir", toastOptions);
@@ -79,7 +79,7 @@ export default function Chat() {
                 }, 3000); 
               }
             }
-            toast.error("Çıkış Yaspıldı", toastOptions);
+            toast.error("Çıkış Yapıldı", toastOptions);
           }
         } else {
           navigate("/setAvatar");

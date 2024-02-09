@@ -19,12 +19,11 @@ export default function UserStoryDelete({ storyId }) {
     .then(res => {
         if(res.status !== 200) 
             toast.error(`err-> ${res.data.msg}`, toastOptions) 
-        
         else {
-            toast.success(`Story Silindi`, toastOptions);
-            setTimeout( ()=> {
-                window.location.reload();
-            },3000)
+          toast.success(`Story Silindi`, toastOptions);
+          setTimeout(() => {
+            window.location.reload();
+          }, 5000);
         }
     })
     .catch (error => {
