@@ -1,0 +1,4 @@
+::ffff:127.0.0.1 - - [11/Feb/2024:10:37:11 +0000] "POST /user-service/auth/login HTTP/1.1" 504 - "-" "PostmanRuntime/7.36.1"
+::ffff:127.0.0.1 - - [11/Feb/2024:10:37:36 +0000] "POST /user-Service/auth/login HTTP/1.1" 504 - "-" "PostmanRuntime/7.36.1"
+::ffff:127.0.0.1 - - [11/Feb/2024:10:37:48 +0000] "GET /user-Service/auth/login HTTP/1.1" 504 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OPR/106.0.0.0"
+::ffff:127.0.0.1 - - [11/Feb/2024:10:37:48 +0000] "GET /favicon.ico HTTP/1.1" 404 150 "http://127.0.0.1:8080/user-Service/auth/login" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OPR/106.0.0.0"

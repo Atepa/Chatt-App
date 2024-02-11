@@ -5,9 +5,9 @@ import { useNavigate, Link, useParams } from "react-router-dom";
 import Logo from "../assets/logo.svg";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { RefreshPassword, forgotPassword } from "../utils/APIRoutes";
+import { refreshPassword, forgotPassword } from "../utils/APIRoutes";
 
-export default function ForgotPassword() {
+export default function RefreshPass() {
 
   const navigate = useNavigate();
   const { userId } = useParams();
@@ -83,16 +83,20 @@ export default function ForgotPassword() {
             <h1>snappy</h1>
           </div>
           <input
-            type="text"
-            placeholder="userMail"
-            name="userMail"
+            type="password"
+            placeholder="New Password"
+            name="newPassword"
             onChange={(e) => handleChange(e)}
-            min="3"
+            min="8"
           />
-          <button type="submit">Mail Gönder</button>
-          <span>
-            <Link to="/login">Login Page</Link>
-          </span>
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            name="confirmPassword"
+            onChange={(e) => handleChange(e)}
+            min="8"
+          />
+          <button type="submit">Yeni Şifreyi Kaydet</button>
         </form>
       </FormContainer>
       <ToastContainer />
