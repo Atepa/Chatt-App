@@ -35,22 +35,28 @@ authRouter.post('/refresh/password/:refreshToken/:userId', authController.postRe
 
 authRouter.post('/refresh/has-refresh-password/:refreshToken/:userId', authController.postHasRefreshPassword);
 
+authRouter.get('/allusers/:id', authController.getAllUsers);
+
+authRouter.post('/setavatar/:id', tokenValidate, authController.setAvatar);
+
+// story
 authRouter.get('/story', tokenValidate, authController.getStories);
 
 authRouter.get('/story/:userId', tokenValidate, authController.getStoryByUserId);
 
-authRouter.delete('/story/delete/:storyId', tokenValidate, authController.deleteStoryByStoryId);
+authRouter.delete('/story/delete/:userId/:storyId', tokenValidate, authController.deleteStoryByStoryId);
 
 authRouter.post('/add-story/user/:userId', tokenValidate, upload.single('file'), authController.postStoryById);
 
+authRouter.post('/post-access-story/:userId/:storyId', tokenValidate, authController.postStoryByCurrentId);
+
+authRouter.get('/get-access-story/:userId/:storyId', tokenValidate, authController.getAccesStoryById);
+
+// user Info
 authRouter.get('/user/info/:userId', tokenValidate, authController.getUserByUserId);
 
 authRouter.put('/user/update/:userId', tokenValidate, authController.putUserByUserId);
 
 authRouter.put('/user/update-password/:userId', tokenValidate, authController.putUserPasswordByUserId);
-
-authRouter.get('/allusers/:id', authController.getAllUsers);
-
-authRouter.post('/setavatar/:id', tokenValidate, authController.setAvatar);
 
 module.exports = authRouter;

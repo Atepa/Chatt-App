@@ -4,17 +4,27 @@ const AccessUsers = mongoose.Schema(
   {
     storyId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Stories',
+      ref: 'stories',
       required: true,
     },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'users',
-      required: true,
-    },
+    accesUsers: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'users',
+          required: true,
+        },
+        timestamp: {
+          type: Date,
+          default: () => new Date(Date.now() + (3 * 60 * 60 * 1000)),
+        },
+      },
+    ],
   },
   {
-    timestamps: true,
+    timestamps: {
+      currentTime: () => new Date(Date.now() + (3 * 60 * 60 * 1000)),
+    },
   },
 );
 

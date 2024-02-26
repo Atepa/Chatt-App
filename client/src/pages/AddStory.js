@@ -108,13 +108,6 @@ export default function  FileInput()  {
       fileInputRef.current.value = "";
       return false;
     }
-    // else if(errorMessage == "") {
-    //   toast.error("Bir video veya fotoğraf seçilmeli", toastOptions);
-    //   setVideoPreview(null);
-    //   setImagePreview(null);
-    //   fileInputRef.current.value = "";
-    //   return false;
-    // } 
     const formData = new FormData();
     formData.append('file',file);
     formData.append('duration', videoDuration);
@@ -139,7 +132,7 @@ export default function  FileInput()  {
       }, 3000); 
     })
     .catch(err =>{
-      toast.error(`Kayıt Başarısız error-> ${err.errorMessage}`, toastOptions);
+      toast.error(`Kayıt Başarısız -> ${err.errorMessage}`, toastOptions);
 
     })
   }

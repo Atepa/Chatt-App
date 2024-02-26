@@ -88,17 +88,17 @@ export default function Register() {
         }})
       .then( response => {
         if (response.status !== 200) {
-            toast.error(`Hata: ${response.data.msg}`, toastOptions);
+            toast.error(`${response.data.msg}`, toastOptions);
         } else {
           navigate("/login");
         }
       })
       .catch( error => {
           if(error.response?.status === 404){
-            toast.error(`error -> ${ error.response.msg}`,toastOptions);
+            toast.error(`${ error.response.msg}`,toastOptions);
           }
           else
-            toast.error(`error -> ${ error.message}`,toastOptions);
+            toast.error(`${ error.message}`,toastOptions);
       })
     }
   };

@@ -5,7 +5,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { deleteStory } from "../utils/APIRoutes";
 
-export default function UserStoryDelete({ storyId, token }) {
+export default function UserStoryDelete({ storyId, user, token }) {
 
   const toastOptions = {
     position: "bottom-right",
@@ -16,7 +16,10 @@ export default function UserStoryDelete({ storyId, token }) {
   };
 
   const handleDelete = async () => {
-    await axios.delete(`${deleteStory}/${storyId}`, {
+    console.log(user);
+    console.log(user._id);
+
+    await axios.delete(`${ deleteStory }/${ user._id }/${ storyId }`, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': token,
@@ -24,16 +27,16 @@ export default function UserStoryDelete({ storyId, token }) {
     })
     .then(res => {
         if(res.status !== 200) 
-            toast.error(`err-> ${res.data.msg}`, toastOptions) 
+            toast.error(`${res.data.msg}`, toastOptions) 
         else {
           toast.success(`Story Silindi`, toastOptions);
-          setTimeout(() => {
-            window.location.reload();
-          }, 5000);
+          // setTimeout(() => {
+          //   window.location.reload();
+          // }, 5000);
         }
     })
     .catch (error => {
-        toast.error(`error-> ${error.message}`, toastOptions) 
+        toast.error(`${error.message}`, toastOptions) 
     })
   };
 

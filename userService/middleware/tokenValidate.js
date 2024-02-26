@@ -10,7 +10,6 @@ function tokenAuth(req, res, next) {
     req.isAdmin = decodedToken.isAdmin;
     next();
   } catch (error) {
-    console.log(error);
     return res.status(401).send({ msg: `${error}---hatalı token`, status: false });
   }
 }

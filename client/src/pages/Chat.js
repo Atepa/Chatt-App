@@ -96,9 +96,9 @@ export default function Chat() {
   return (
     <>
       <Container>
-        <Alert>
+        {/* <Alert>
           Mesajlarınız her gün saat 00.00 ve 12.00 da silinir...
-        </Alert>
+        </Alert> */}
         <div className="container">
           <Contacts contacts={contacts} changeChat={handleChatChange} />
           {currentChat === undefined ? (

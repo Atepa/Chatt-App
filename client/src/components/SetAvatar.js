@@ -71,7 +71,7 @@ export default function SetAvatar() {
         }
       })
       .catch(error =>{
-        toast.error(`error -- ${error.response.data.msg}`, toastOptions);
+        toast.error(`${error.response.data.msg}`, toastOptions);
       })
      }
   };

@@ -83,7 +83,7 @@ export default function RefreshPass() {
                 window.location.href ='/login';
               }, 4000);
             } else{
-                toast.success(`error -> ${res.data.msg}`,toastOptions);
+                toast.success(`${res.data.msg}`,toastOptions);
             }
         })
         .catch ( error => {

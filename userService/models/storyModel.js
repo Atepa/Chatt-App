@@ -27,10 +27,30 @@ const StoryScheman = mongoose.Schema({
     type: String,
     required: true,
   },
-  isActive: { type: Boolean, default: true },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  accessUsers: [
+    {
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users',
+        required: true,
+      },
+      userNickName: {
+        type: String,
+        required: true,
+      },
+      timestamp: {
+        type: Date,
+        default: () => new Date(Date.now() + (3 * 60 * 60 * 1000)),
+      },
+    },
+  ],
 }, {
   timestamps: {
-    currentTime: () => new Date().toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }),
+    currentTime: () => new Date(Date.now() + (3 * 60 * 60 * 1000)),
   },
 });
 

@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getStories } from "../utils/APIRoutes";
+import { getStories, postAccessStory } from "../utils/APIRoutes";
 import AddStory from "../components/AddStoryNavigate";
 import HasStoryContacts from "../components/HasStoryContacts";
 import LogoutFunction from "../components/LogoutFunction";
@@ -18,6 +18,8 @@ export default function Story() {
   const [userHasStory, setUserHasStory] = useState([]);
   const [currentUser, setCurrentUser] = useState(undefined);
   const [currentStory, setCurrentStory] = useState(undefined);
+  const [token, setToken] = useState('');
+  const [storySelected, setStorySelected] = useState(false); // Hikaye seçildi mi?
 
   const toastOptions = {
     position: "bottom-right",
@@ -84,9 +86,8 @@ export default function Story() {
                 toast.error("oturumun süresi bitmiştir", toastOptions);
                 navigate("/login");
               } else {
-                console.error("Logout failed");
+                toast.error("Logout failed", toastOptions);
               }
-              console.log(error);
             // }
           }
         } else {
@@ -102,41 +103,69 @@ export default function Story() {
     const token = JSON.parse(
       localStorage.getItem('token')
     );		
+    setToken(token);
+    let updatedStor;
+
     await axios.get(`${getStories}/${story._id}`,{
       headers: {
         'Authorization': token
       }
     })
     .then( res => {
-        console.log(res.data);
-        const paths = res.data.response.map(story => `${process.env.REACT_APP_URL}${story.storyPath}`);
-        const userNames = res.data.response.map(story => `${story.senderUserNickName}`);
-        const duration = res.data.response.map(story => `${story.duration}`);
-        const createdAt = res.data.response.map(story => {
-        const dateObject = new Date(story.createdAt);
-        const saat = dateObject.getHours();
-        const dakika = dateObject.getMinutes();
-        return `${saat}:${dakika}`;
-        });
-        const updatedStor = paths.map((path, index) => {
-          return {
-            url: path,
-            duration: duration[index] || 5000, // stor'daki değeri al, eğer yoksa varsayılan değeri kullan
-            header: {
-              heading: userNames[index],
-              subheading: createdAt[index],
-            },
-          };
-        });
-        setCurrentStory(updatedStor);  
+      const storyId = res.data.response.map(story => `${story._id}`);
+      const paths = res.data.response.map(story => `${process.env.REACT_APP_URL}${story.storyPath}`);
+      const userNames = res.data.response.map(story => `${story.senderUserNickName}`);
+      const duration = res.data.response.map(story => `${story.duration}`);
+      const createdAt = res.data.response.map(story => {
+      const dateObject = new Date(story.createdAt);
+      const saat = dateObject.getHours();
+      const dakika = dateObject.getMinutes();
+      return `${saat}:${dakika}`;
+      });
+      updatedStor = paths.map((path, index) => {
+        return {
+          _id: storyId[index],
+          url: path,
+          duration: duration[index] || 5000, // stor'daki değeri al, eğer yoksa varsayılan değeri kullan
+          header: {
+            heading: userNames[index],
+            subheading: createdAt[index],
+          },
+        };
+      });
+      setCurrentStory(updatedStor);  
     })
     .catch(error => {
-      console.log(error);
       if(error.response?.status === 404)
-        toast.error(`error-> ${error.response.data.msg}`, toastOptions)
+        toast.error(`${error.response.data.msg}`, toastOptions)
       else 
-        toast.error(`error -> ${ error.message}`,toastOptions);
+        toast.error(`${ error.message}`,toastOptions);
     })   
+  };
+
+  const handleStoryStart = async (story) => {
+    if (currentStory) 
+    {
+      if (!story) {
+        return;
+      }
+      try {
+        await axios.post(`${postAccessStory}/${currentUser._id}/${story._id}`, {
+          userNickName: currentUser.userNickName,
+        }, {
+          headers: {
+            'Authorization': token,
+          },
+        });
+        console.log("Post Access Story successful");
+      } catch (error) {
+        if (error.response?.status === 404) {
+          toast.error(`${error.response.data.msg}`, toastOptions);
+        } else {
+          toast.error(`${error.message}`, toastOptions);
+        }
+      }
+    }
   };
 
   return (
@@ -175,9 +204,9 @@ export default function Story() {
             width={400}
             height={500}
             storyContainerStyles={{ borderRadius: 8, overflow: "hidden", backgroundColor: "black",border: "2px solid #333"}}
-            onStoryEnd={(s, st) => console.log("story ended", s, st)}
+            onStoryEnd={(s, st) => handleStoryStart(st)}
             onAllStoriesEnd={(s, st) => console.log("all stories ended", s, st)}
-            onStoryStart={(s, st) => console.log("story started", s, st)}
+            onStoryStart={(s, st) =>  handleStoryStart(st)}
             storyStyles={{
               width: '100%', 
               height: '100%', 

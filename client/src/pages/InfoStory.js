@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useNavigate, Link, Navigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getStories } from "../utils/APIRoutes";
+import { getStories, getAccessStory } from "../utils/APIRoutes";
 import AddStory from "../components/AddStoryNavigate";
 import UserStoriesContacts from "../components/UserStories";
 import Atepa from "../assets/loader.gif";
@@ -12,12 +12,14 @@ import logo from "../assets/LOGO.png";
 import InstaStory from "react-insta-stories";
 import MainPageNavigate from "../components/MainPageNavigate";
 import UserStoryDelete from "../components/UserStoryDelete";
+import UserAccessStory from "../components/UsersAccesStory";
 
 export default function InfoStoryStory() {
   const [userStories, setUserStories] = useState([]);
   const [currentUser, setCurrentUser] = useState(undefined);
   const [currentStory, setCurrentStory] = useState(undefined);
   const [currentStoryId, setCurrentStoryId] = useState(undefined);
+  const [currentStoryAccess, setCurrentStoryAccess] = useState(undefined);
   const [token, setToken] = useState(); 
 
   const toastOptions = {
@@ -44,14 +46,14 @@ export default function InfoStoryStory() {
 
   useEffect(() => {
     const fetchData = async () => {
-    //   if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
-    //     navigate("/login");
-    //   } else {
+      if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
+        navigate("/login");
+      } else {
         setCurrentUser(
           await JSON.parse(
             localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
           ));
-    //   }
+      }
     };
     fetchData();
   }, [navigate]);
@@ -75,19 +77,15 @@ export default function InfoStoryStory() {
         await axiosInstance.get(`${getStories}/${currentUser._id}`)
         .then( response => {
             if (response.status !== 200) {
-                toast.error(`Hata: ${response.data.msg}`, toastOptions);
+                toast.error(`${response.data.msg}`, toastOptions);
             } else {
                 setUserStories(response.data.response);
             }
         })
         .catch( error => {
             if(error.response?.status === 404){
-                // setTimeout(() => {
-                //   toast.error(`error-> ${error.response.data.msg}`, toastOptions)
-                // }, 3000);
-            }
-            else
-                toast.error(`error -> ${ error.message}`,toastOptions);
+              toast.error(`${error.response.data.msg}`, toastOptions)
+            } else toast.error(`${ error.message}`,toastOptions);
         })
         } else {
           navigate("/setAvatar");
@@ -97,18 +95,35 @@ export default function InfoStoryStory() {
     fetchData();
   }, [currentUser, navigate, setUserStories]);
 
+  const handleStoryChange = async (story) => { 
+    setCurrentStoryId(story._id)
+    const modifiedStory = [{
+      duration: story.duration,
+      header: story.senderUserNickName,
+      subheading: story.createdAt,
+      url: `${process.env.REACT_APP_URL}${story.storyPath}`
+    }];
+    setCurrentStory(modifiedStory);
 
-    const handleStoryChange = async (story) => { 
-        setCurrentStoryId(story._id)
-        const modifiedStory = [{
-            duration: story.duration,
-            header: story.senderUserNickName,
-            subheading: story.createdAt,
-            url: `${process.env.REACT_APP_URL}${story.storyPath}`
-        }];
-        console.log(modifiedStory);
-        setCurrentStory(modifiedStory);
-    };
+    const axiosInstance = axios.create({
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token,
+      }
+      });
+      console.log(story);
+      
+    await axiosInstance.get(`${getAccessStory}/${currentUser._id}/${story._id}`)
+    .then( (response) => {
+      if (response.status !== 200)  toast.error(`${response.data.msg}`, toastOptions);
+      else  setCurrentStoryAccess(response.data.accessUsers);
+    })
+    .catch((error)=> {
+      if(error.response?.status === 404){
+        toast.error(`${error.response.data.msg}`, toastOptions)
+      } else toast.error(`${ error.message}`,toastOptions);
+    })
+  };
 
   return (
     <>
@@ -120,7 +135,7 @@ export default function InfoStoryStory() {
           <h></h>
           <h></h>
           <h>Seçileni Sil</h>
-          <UserStoryDelete storyId={ currentStoryId } token={token} />
+          <UserStoryDelete storyId={ currentStoryId } user={ currentUser } token={token} />
           <h></h>
           <h></h>
           <h>Story Ekle</h>
@@ -128,7 +143,7 @@ export default function InfoStoryStory() {
         </form>
         <form className="users-has-story">
           <h>Storylerin</h> 
-          <UserStoriesContacts contacts={userStories} changeChat={handleStoryChange}/>
+          <UserStoriesContacts contacts={ userStories } changeChat={handleStoryChange}/>
         </form >
         <form className="users-story">
         <h>Story</h>
@@ -158,6 +173,10 @@ export default function InfoStoryStory() {
             }}
           />
         </form >
+        <form className="access-story-form">
+          <h>Story'ne Erişenler</h>
+          <UserAccessStory accessUsers={currentStoryAccess} />
+        </form>
       </div>
       <span>
         <Link to="/">Go Chat</Link>
@@ -186,7 +205,7 @@ const FormContainer = styled.div`
   }
   .add-story-form {
     height: 70vh;
-    width: 15vw;
+    width: 13vw;
     align-self: flex-center;
     align-items: center;
     button {
@@ -206,13 +225,21 @@ const FormContainer = styled.div`
   }
   .users-has-story {
     height: 70vh;
-    width: 30vw;
+    width: 23vw;
     align-self: flex-center;
     align-items: center;
   }
+  .access-story-form{
+    height: 70vh;
+    width: 23vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+  }
   .users-story {
     height: 70vh;
-    width: 30vw;
+    width: 28vw;
     align-self: flex-center;
     align-items: center;
     img {

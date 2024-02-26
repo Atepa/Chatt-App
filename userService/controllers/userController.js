@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
 const UserModel = require('../models/userModel');
 const StoryModel = require('../models/storyModel');
 const postRabbitMqHelper = require('../helper/postRabbitMq');
@@ -11,11 +12,11 @@ exports.postCreateUser = async function postCreateUser(req, res) {
   } = req.body;
   let checkUser;
   await UserModel.findOne({ $or: [{ userNickName }, { userMail }] })
-    .then((res) => {
-      if (res && res.userMail === userMail) return res.status(400).json({ msg: 'Email already used', status: false, body: req.body });
+    .then((response) => {
+      if (response && response.userMail === userMail) return res.status(400).json({ msg: 'Email already used', status: false, body: req.body });
 
-      if (res && res.userNickName === userNickName) return res.status(400).json({ msg: 'Nickname already used', status: false, body: req.body });
-      checkUser = res;
+      if (response && response.userNickName === userNickName) return res.status(400).json({ msg: 'Nickname already used', status: false, body: req.body });
+      checkUser = response;
     })
     .catch((error) => res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false }));
 
@@ -25,8 +26,8 @@ exports.postCreateUser = async function postCreateUser(req, res) {
 
   let IsAdmin = false;
   await UserModel.countDocuments({ userIsActive: true })
-    .then((res) => {
-      res === 0 ? IsAdmin = true : IsAdmin = false;
+    .then((rsp) => {
+      if (rsp === 0) IsAdmin = true; else IsAdmin = false;
     })
     .catch((error) => res.status(500).json({ msg: `Server Error -- ${error.message}`, status: false }));
 
@@ -261,7 +262,6 @@ module.exports.getStoryByUserId = async function getStoryByUserId(req, res) {
   ])
     .then((response) => {
       if (response.length === 0) return res.status(404).json({ msg: 'Kullanıcı Bir Story`ye Sahip Değil.', status: true });
-      console.log(response);
       return res.status(200).json({ response, status: true });
     })
     .catch((error) => res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false }));
@@ -270,12 +270,25 @@ module.exports.getStoryByUserId = async function getStoryByUserId(req, res) {
 module.exports.deleteStoryByStoryId = async function deleteStoryByStoryId(req, res) {
   await StoryModel.findOneAndDelete({ _id: req.params.storyId })
     .then(async (response) => {
-      if (response.length === 0) {
-        return res.status(404).json({ msg: 'Story Bulunamadı.', response, status: true });
-      }
-      return res.status(200).json({ msg: 'Başarıyla Silindi', status: true });
+      if (response.length === 0) return res.status(404).json({ msg: 'Story Bulunamadı.', response, status: false });
+      await StoryModel.countDocuments({ senderUserId: req.params.userId })
+        .then(async (count) => {
+          if (count === 0) {
+            await UserModel.findOneAndUpdate(
+              { _id: req.params.userId },
+              { $set: { hasStory: false } },
+              { new: true },
+            )
+              .then((rps) => {
+                if (rps.length === 0) return res.status(404).json({ msg: 'Story Bulunamadı.', status: false });
+                return res.status(200).json({ msg: 'Başarıyla Silindi', status: true });
+              })
+              .catch((error) => { console.log(error); return res.status(404).json({ msg: `Server Error -- ${error.message}`, status: false }); });
+          }
+        })
+        .catch((error) => { console.log(error); return res.status(500).json({ msg: `Server Error -- ${error.message}`, status: false }); });
     })
-    .catch((error) => res.status(500).json({ msg: `Kayıt Bulunamadı -- ${error.message}`, status: false }));
+    .catch((error) => { console.log(error); return res.status(500).json({ msg: `Server Error -- ${error.message}`, status: false }); });
 };
 
 module.exports.getUserByUserId = async function getUserByUserId(req, res) {
@@ -330,7 +343,7 @@ module.exports.postStoryById = async function postStoryById(req, res) {
     { new: false },
   )
     .then((response) => {
-      response ? delete response.userPassword : null;
+      if (response) delete response.userPassword;
     })
     .catch((error) => res.status(404).json({ status: false, msg: `Kayıt Başarısız -- ${error.message}` }));
   const Story = new StoryModel({
@@ -344,4 +357,57 @@ module.exports.postStoryById = async function postStoryById(req, res) {
   await Story.save()
     .then((response) => res.status(200).json({ status: true, response }))
     .catch((error) => res.status(500).json({ status: false, msg: `Kayıt Başarısız -- ${error.message}` }));
+};
+
+module.exports.postStoryByCurrentId = async function postStoryByCurrentId(req, res) {
+  const { userId, storyId } = req.params;
+  const { userNickName } = req.body;
+  await StoryModel.findById(storyId)
+    .then((rsp) => {
+      rsp.accessUsers.push({ userId, userNickName });
+      rsp.save()
+        .then((response) => {
+          if (!response) return res.status(404).json({ msg: 'Story Bulunamadı', status: false });
+          return res.status(200).json({ msg: 'Kayıt Başarılı', status: true });
+        })
+        .catch((error) => {
+          if (error instanceof mongoose.Error.CastError) {
+            return res.status(400).json({ msg: 'Geçersiz ID', error: error.message, status: false });
+          } if (error instanceof mongoose.Error.ValidationError) {
+            return res.status(422).json({ msg: 'Doğrulama Hatası', error: error.message, status: false });
+          } if (error.code === 11000) {
+            return res.status(500).json({ msg: 'MongoDB Hatası', error: error.message, status: false });
+          } if (error instanceof SyntaxError) {
+            return res.status(400).json({ msg: 'Sözdizimi Hatası', error: error.message, status: false });
+          } return res.status(500).json({ msg: 'Sunucu Hatası', error: error.message, status: false });
+        });
+    })
+    .catch((error) => res.status(404).json({ msg: `Story Bulunamadı -- ${error.message}`, status: false }));
+};
+
+module.exports.getAccesStoryById = async function getAccesStoryById(req, res) {
+  const { userId, storyId } = req.params;
+
+  await StoryModel.findOne({ _id: storyId, senderUserId: userId }).select('accessUsers.userId accessUsers.userNickName')
+    .then((response) => {
+      if (!response) return res.status(404).json({ msg: 'Story Bulunamadı', status: false });
+
+      const uniqueUsers = {};
+      response.accessUsers.forEach(({ userId, userNickName }) => {
+        uniqueUsers[userId.toString()] = { userId, userNickName };
+      });
+      const accessUsers = Object.values(uniqueUsers);
+      return res.status(200).json({ accessUsers, status: true });
+    })
+    .catch((error) => {
+      if (error instanceof mongoose.Error.CastError) {
+        return res.status(400).json({ msg: 'Geçersiz ID', error: error.message, status: false });
+      } if (error instanceof mongoose.Error.ValidationError) {
+        return res.status(422).json({ msg: 'Doğrulama Hatası', error: error.message, status: false });
+      } if (error.code === 11000) {
+        return res.status(500).json({ msg: 'MongoDB Hatası', error: error.message, status: false });
+      } if (error instanceof SyntaxError) {
+        return res.status(400).json({ msg: 'Sözdizimi Hatası', error: error.message, status: false });
+      } return res.status(500).json({ msg: 'Sunucu Hatası', error: error.message, status: false });
+    });
 };

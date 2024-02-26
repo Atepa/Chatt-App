@@ -170,11 +170,11 @@ export default function InfoUser() {
           }, 3000); 
         }
         else{
-          toast.error(`Başarısız ${res.data.msg}`, toastOptions);
+          toast.error(`${res.data.msg}`, toastOptions);
         }
       })
       .catch(error => {
-        toast.error(`err --> ${error.message}`, toastOptions);
+        toast.error(`${error.message}`, toastOptions);
       })
     }
   };
@@ -195,11 +195,11 @@ export default function InfoUser() {
           }, 3000); 
         }
         else{
-          toast.error(`Başarısız ${res.data.msg}`, toastOptions);
+          toast.error(`${res.data.msg}`, toastOptions);
         }
       })
       .catch(error => {
-        toast.error(`err --> ${error.message}`, toastOptions);
+        toast.error(`${error.message}`, toastOptions);
       })
     }
   };

@@ -68,9 +68,10 @@ export default function HasStoryContacts({ contacts, changeChat }) {
     </>
   );
 }
+
 const Container = styled.div`
   height: 748vh;
-  width: 25vw;
+  width: 20vw;
   display: grid;
   grid-template-rows: 10% 75% 15%;
   overflow: hidden;
