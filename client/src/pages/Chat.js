@@ -27,7 +27,6 @@ export default function Chat() {
   
    useEffect(() => {
     const fetchData = async () => {
-
       if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
         navigate("/login");
       } else {
@@ -50,11 +49,11 @@ export default function Chat() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (currentUser) {
+      const token = JSON.parse(
+        localStorage.getItem('token')
+      );     
+       if (currentUser) {
         if (currentUser.isAvatarImageSet) {
-          const token = await JSON.parse(
-            localStorage.getItem('token')
-          );
           const axiosInstance = axios.create({
             headers: {
               'Content-Type': 'application/json',
@@ -70,6 +69,7 @@ export default function Chat() {
               setContacts(response.data.response);
             }
           } catch (error) {
+            console.log(error);
             if(error.response?.status === 401) {
               const success = await LogoutFunction();
               if (success) {

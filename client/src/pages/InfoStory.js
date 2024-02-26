@@ -8,7 +8,7 @@ import { getStories } from "../utils/APIRoutes";
 import AddStory from "../components/AddStoryNavigate";
 import UserStoriesContacts from "../components/UserStories";
 import Atepa from "../assets/loader.gif";
-import logo from "../assets/logo.svg";
+import logo from "../assets/LOGO.png";
 import InstaStory from "react-insta-stories";
 import MainPageNavigate from "../components/MainPageNavigate";
 import UserStoryDelete from "../components/UserStoryDelete";
@@ -18,6 +18,7 @@ export default function InfoStoryStory() {
   const [currentUser, setCurrentUser] = useState(undefined);
   const [currentStory, setCurrentStory] = useState(undefined);
   const [currentStoryId, setCurrentStoryId] = useState(undefined);
+  const [token, setToken] = useState(); 
 
   const toastOptions = {
     position: "bottom-right",
@@ -59,15 +60,18 @@ export default function InfoStoryStory() {
     const fetchData = async () => {
       if (currentUser) {
         if (currentUser.isAvatarImageSet) {
-            const  token  = await JSON.parse(
+          setToken(JSON.parse(
             localStorage.getItem('token')
-            );
-            const axiosInstance = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token,
-            }
-            });
+          )) ;
+          const tkn = JSON.parse(
+            localStorage.getItem('token')
+          );
+          const axiosInstance = axios.create({
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': tkn,
+          }
+          });
         await axiosInstance.get(`${getStories}/${currentUser._id}`)
         .then( response => {
             if (response.status !== 200) {
@@ -116,7 +120,7 @@ export default function InfoStoryStory() {
           <h></h>
           <h></h>
           <h>Seçileni Sil</h>
-          <UserStoryDelete storyId={currentStoryId} />
+          <UserStoryDelete storyId={ currentStoryId } token={token} />
           <h></h>
           <h></h>
           <h>Story Ekle</h>

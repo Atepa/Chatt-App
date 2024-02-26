@@ -7,12 +7,10 @@ const logoutFunction = async () => {
     const id = await JSON.parse(
       localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
     )._id;
-    const token = await JSON.parse(localStorage.getItem("token"));
 
     const axiosInstance = axios.create({
       headers: {
         "Content-Type": "application/json",
-        Authorization: token,
       },
     });
 

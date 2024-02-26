@@ -2,15 +2,15 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { useNavigate, Link, useParams } from "react-router-dom";
-import Logo from "../assets/logo.svg";
+import Logo from "../assets/LOGO.png";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { refreshPassword, forgotPassword } from "../utils/APIRoutes";
+import { hasRefreshPassword, refreshPassword } from "../utils/APIRoutes";
 
 export default function RefreshPass() {
 
   const navigate = useNavigate();
-  const { userId } = useParams();
+  const { refreshToken, userId } = useParams();
 
   const [values, setValues] = useState({ newPassword: "", confirmPassword: "" });
   const toastOptions = {
@@ -20,14 +20,39 @@ export default function RefreshPass() {
     draggable: true,
     theme: "dark",
   };
+
+  const toastOptionsTrue = {
+    position: "bottom-right",
+    autoClose: 1000,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "dark",
+  };
+
   useEffect(() => {
     if (localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
       navigate("/");
     }
   }, []);
 
+  useEffect(() => {
+    const verifyUrlData = async () => {
+      await axios.post(`${hasRefreshPassword}/${refreshToken}/${userId}`)
+      .then(response => {
+        if(response.status === 401)
+          toast.success(`ee`,toastOptionsTrue);
+      })
+      .catch(error =>{
+        toast.error(`${error.response.data.msg} Yönlendiriliyorsunuz`,toastOptions);
+        setTimeout(() => {
+          navigate("/login");
+        }, 8000);
+      })
+  }
+  verifyUrlData();
+  }, [navigate]);
+
   const handleChange = (event) => {
-    console.log(values);
     setValues({ ...values, [event.target.name]: event.target.value });
   };
 
@@ -38,8 +63,8 @@ export default function RefreshPass() {
       return false;
     } 
     if (newPassword !== confirmPassword) {
-        toast.error("Password and confirm password should be same.", toastOptions);
-        return false;
+      toast.error("Password and confirm password should be same.", toastOptions);
+      return false;
     } 
     return true;
   };
@@ -48,16 +73,15 @@ export default function RefreshPass() {
     event.preventDefault();
     if (validateForm()) {
         const { newPassword } = values;
-        await axios.post(`${RefreshPassword}`, { 
-            id: userId,
-            password: newPassword
+        await axios.post(`${refreshPassword}/${refreshToken}/${userId}`, { 
+          newPassword
         })
         .then( res => {
             if(res.status === 200){
-                setTimeout(() => {
-                    toast.success(`Şifre Başarıyla Değiştirildi`,toastOptions);
-                    // link
-                }, 4000);
+              toast.success(`Şifre Başarıyla Değiştirildi`,toastOptions);
+              setTimeout(() => {
+                window.location.href ='/login';
+              }, 4000);
             } else{
                 toast.success(`error -> ${res.data.msg}`,toastOptions);
             }

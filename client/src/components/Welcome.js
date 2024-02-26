@@ -40,6 +40,8 @@ const Container = styled.div`
   align-items: center;
   color: white;
   flex-direction: column;
+  overflow-y: auto; 
+      overflow-x: auto; 
   img {
     height: 20rem;
   }

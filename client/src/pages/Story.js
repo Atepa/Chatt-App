@@ -11,7 +11,6 @@ import LogoutFunction from "../components/LogoutFunction";
 import Atepa from "../assets/loader.gif";
 import logo from "../assets/logo.svg";
 import InstaStory from "react-insta-stories";
-import ReactPlayer from 'react-player';
 import MainPageNavigate from "../components/MainPageNavigate";
 import UserStoryNavigate from "../components/UserStoryNavigate";
 
@@ -43,7 +42,6 @@ export default function Story() {
 
   const navigate = useNavigate();
 
-  // kullanıcı bilgileri alındı
   useEffect(() => {
     const fetchData = async () => {
       if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
@@ -52,7 +50,8 @@ export default function Story() {
         setCurrentUser(
           await JSON.parse(
             localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-          ));
+          )
+        );
       }
     };
     fetchData();
@@ -62,9 +61,9 @@ export default function Story() {
     const fetchData = async () => {
       if (currentUser) {
         if (currentUser.isAvatarImageSet) {
-          const  token  = await JSON.parse(
+          const token = JSON.parse(
             localStorage.getItem('token')
-          );
+          );		
           const axiosInstance = axios.create({
             headers: {
               'Content-Type': 'application/json',
@@ -100,9 +99,16 @@ export default function Story() {
 
 
   const handleStoryChange = async (story) => {
-
-    await axios.get(`${getStories}/${story._id}`)
+    const token = JSON.parse(
+      localStorage.getItem('token')
+    );		
+    await axios.get(`${getStories}/${story._id}`,{
+      headers: {
+        'Authorization': token
+      }
+    })
     .then( res => {
+        console.log(res.data);
         const paths = res.data.response.map(story => `${process.env.REACT_APP_URL}${story.storyPath}`);
         const userNames = res.data.response.map(story => `${story.senderUserNickName}`);
         const duration = res.data.response.map(story => `${story.duration}`);

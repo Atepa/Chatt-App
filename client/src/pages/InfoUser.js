@@ -43,7 +43,7 @@ export default function InfoUser() {
   };
 
   useEffect(() => {
-    const fetchData =       () => {
+    const fetchData = () => {
       if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
         navigate("/login");
       }	
@@ -57,7 +57,15 @@ export default function InfoUser() {
 				localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
 			);
       setCurrentUserId(users._id)
-			await axios.get(`${getUserInfo}/${users._id}`)
+      const token = JSON.parse(
+        localStorage.getItem('token')
+      );			
+      await axios.get(`${getUserInfo}/${users._id}` ,{
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+        }
+      })
 			.then(res => { 
 				if (res.data.status === false) {
 					toast.error(res.data.msg, toastOptions);
@@ -89,7 +97,7 @@ export default function InfoUser() {
 			})
 		}
 		fetchData();
-	},[ setStandartValues, setUserName, setuserNickName, setUserMail,setUserGender,setUserGender,setUserCreatedAt, setUserLastAccessTime, setUserColor, setCurrentUserId ]);
+	},[ setStandartValues, setUserName, setuserNickName, setUserMail,setUserGender,setUserGender,setUserCreatedAt, setUserLastAccessTime, setUserColor, setCurrentUserId]);
 
   const handleColorChange = (color) => {
     standartValues.userColor = color;
@@ -99,6 +107,7 @@ export default function InfoUser() {
   const handleChangeStandartData = (event) => {
     setStandartValues({ ...standartValues, [event.target.name]: event.target.value });
   };
+
   const handleChangeCustomData = (event) => {
     setCustomValues({ ...customValues, [event.target.name]: event.target.value });
   };
@@ -142,10 +151,16 @@ export default function InfoUser() {
 
   const handleSubmitStandartData = async (event) => {
     event.preventDefault();
-
     if (handleValidationStandartData()) {
+      const token = JSON.parse(
+        localStorage.getItem('token')
+      );		
       await axios.put(`${putUserInfo}/${currentUserId}`, {
         standartValues,
+      }, {
+        headers: {
+          'Authorization': token
+        }
       })
       .then(res => {
         if(res.data.status === true){

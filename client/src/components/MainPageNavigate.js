@@ -2,16 +2,15 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { HiChatBubbleLeftRight } from "react-icons/hi2";
 import styled from "styled-components";
-import LogoutFunction from "./LogoutFunction";
 
 export default function Logout() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-        navigate("/");
+      navigate("/");
     } catch (error) {
-        console.error("Logout failed");
+      console.error("Main Page Navigate Failed");
     }
   };
 

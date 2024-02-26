@@ -1,4 +1,5 @@
 const express = require('express');
+
 const authRouter = express.Router();
 const multer = require('multer');
 
@@ -8,12 +9,12 @@ const tokenValidate = require('../middleware/tokenValidate');
 const loginValidate = require('../middleware/loginValidate');
 
 const storage = multer.diskStorage({
-    destination: function(req, file, cb){
-        return cb(null, "./public");
-    },
-    filename: function (req, file, cb){
-        return cb(null, `${Date.now()}_${file.originalname}`);
-    }
+  destination(req, file, cb) {
+    return cb(null, '../userService/public');
+  },
+  filename(req, file, cb) {
+    return cb(null, `${Date.now()}_${file.originalname}`);
+  },
 });
 
 const upload = multer({ storage });
@@ -30,22 +31,26 @@ authRouter.post('/changemail', tokenValidate, authController.postChangeMailUser)
 
 authRouter.post('/forgot/password', authController.postForgotPassword);
 
-authRouter.get('/story', authController.getStories);
+authRouter.post('/refresh/password/:refreshToken/:userId', authController.postRefreshPassword);
 
-authRouter.get('/story/:userId', authController.getStoryByUserId);
+authRouter.post('/refresh/has-refresh-password/:refreshToken/:userId', authController.postHasRefreshPassword);
 
-authRouter.delete('/story/delete/:storyId', authController.deleteStoryByStoryId);
+authRouter.get('/story', tokenValidate, authController.getStories);
 
-authRouter.post('/add-story/user/:userId', upload.single('file'), authController.postStoryById);
+authRouter.get('/story/:userId', tokenValidate, authController.getStoryByUserId);
 
-authRouter.get('/user/info/:userId', authController.getUserByUserId);
+authRouter.delete('/story/delete/:storyId', tokenValidate, authController.deleteStoryByStoryId);
 
-authRouter.put('/user/update/:userId', authController.putUserByUserId);
+authRouter.post('/add-story/user/:userId', tokenValidate, upload.single('file'), authController.postStoryById);
 
-authRouter.put('/user/update-password/:userId', authController.putUserPasswordByUserId);
+authRouter.get('/user/info/:userId', tokenValidate, authController.getUserByUserId);
 
-authRouter.get("/allusers/:id", tokenValidate, authController.getAllUsers);
+authRouter.put('/user/update/:userId', tokenValidate, authController.putUserByUserId);
 
-authRouter.post("/setavatar/:id", tokenValidate, authController.setAvatar);
+authRouter.put('/user/update-password/:userId', tokenValidate, authController.putUserPasswordByUserId);
+
+authRouter.get('/allusers/:id', authController.getAllUsers);
+
+authRouter.post('/setavatar/:id', tokenValidate, authController.setAvatar);
 
 module.exports = authRouter;

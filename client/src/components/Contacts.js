@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import Logo from "../assets/logo.svg";
+import Logo from "../assets/LOGO.png";
 import Logout from "./Logout";
 import AddStory from "./AddStoryNavigate";
 
 
 export default function Contacts({ contacts, changeChat }) {
   const navigate = useNavigate();
-
   const [currentUserName, setCurrentUserName] = useState(undefined);
   const [currentUserImage, setCurrentUserImage] = useState(undefined);
   const [currentSelected, setCurrentSelected] = useState(undefined);
@@ -21,7 +20,6 @@ export default function Contacts({ contacts, changeChat }) {
         );
         setCurrentUserName(data.userName);
         setCurrentUserImage(data.avatarImage);
-
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -99,13 +97,13 @@ export default function Contacts({ contacts, changeChat }) {
 }
 const Container = styled.div`
   display: grid;
-  grid-template-rows: 10% 75% 15%;
+  grid-template-rows: 10% 75% 15% ;
   overflow: hidden;
   background-color: #080420;
   .brand {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.6rem;
     justify-content: center;
     img {
       height: 2rem;
@@ -116,7 +114,7 @@ const Container = styled.div`
       text-transform: uppercase;
     }
   }
-  
+
   .contacts {
     display: flex;
     flex-direction: column;

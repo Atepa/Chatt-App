@@ -7,6 +7,6 @@ function validateRegisterUser(req, res, next) {
   }
 
   return next();
-};
+}
 
 module.exports = validateRegisterUser;

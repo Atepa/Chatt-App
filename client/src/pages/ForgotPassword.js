@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { useNavigate, Link } from "react-router-dom";
-import Logo from "../assets/logo.svg";
+import Logo from "../assets/LOGO.png";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { forgotPassword } from "../utils/APIRoutes";
@@ -44,7 +44,6 @@ export default function ForgotPassword() {
     event.preventDefault();
     if (validateForm()) {
         const { userMail } = values;
-        console.log(userMail)
         await axios.post(`${forgotPassword}`, { 
           userMail
         })
@@ -55,7 +54,6 @@ export default function ForgotPassword() {
           if(error.response?.status === 404)
           {
             toast.error(`Bu Emaile Sahip Bir Kullanıcı Bulunamadı`,toastOptions);
-
           }
           else{
             toast.error(`Bir Şeyler Ters Gitti`,toastOptions);

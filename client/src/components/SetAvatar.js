@@ -14,6 +14,7 @@ export default function SetAvatar() {
   const [avatars, setAvatars] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAvatar, setSelectedAvatar] = useState(undefined);
+
   const toastOptions = {
     position: "bottom-right",
     autoClose: 8000,
@@ -28,7 +29,6 @@ export default function SetAvatar() {
         navigate("/login");
       }
     };
-  
     checkLocalStorage();
   }, []);
 
@@ -40,39 +40,40 @@ export default function SetAvatar() {
       const  result = await JSON.parse(
         localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
       );
-      const token = await JSON.parse(
+      const token = JSON.parse(
         localStorage.getItem('token')
-      );
-
+      );		
       const axiosInstance = axios.create({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
         }
       });
-      let  data  = await axiosInstance.post(`${setAvatarRoute}/${result._id}`, {
+      await axiosInstance.post(`${setAvatarRoute}/${result._id}`, {
         avatarImage: avatars[selectedAvatar],
-      });
-
-      data = data['data'].userData;
-
-
-      if (data.isAvatarImageSet) {
-        result.isAvatarImageSet = true;
-        result.avatarImage = data.avatarImage;
-        localStorage.setItem(
-          process.env.REACT_APP_LOCALHOST_KEY,
-          JSON.stringify(result)
-        );
-        navigate("/");
-      } else {
-        toast.error("Daha önce avatar seçilmiş. Yönlendirme Yapılacak", toastOptions);
-
-        setTimeout(() => {
+      })
+      .then( response => {
+        if(response.data.response.isAvatarImageSet)
+        {
+          result.isAvatarImageSet = true;
+          result.avatarImage = avatars[selectedAvatar];
+          localStorage.setItem(
+            process.env.REACT_APP_LOCALHOST_KEY,
+            JSON.stringify(result)
+          );
           navigate("/");
-        }, 3000); // 2 saniye bekleyip navigate et
-      }
-    }
+        }
+        else{
+          toast.error("Daha önce avatar seçilmiş. Yönlendirme Yapılacak", toastOptions);
+          setTimeout(() => {
+            navigate("/");
+          }, 3000); 
+        }
+      })
+      .catch(error =>{
+        toast.error(`error -- ${error.response.data.msg}`, toastOptions);
+      })
+     }
   };
 
   useEffect(() => {

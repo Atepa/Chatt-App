@@ -7,7 +7,7 @@ function ColorPicker( { onColorChange } ){
     function handleColorChange( event ){
         const newColor = event.target.value;
         setColor(newColor);
-        onColorChange(newColor); // Seçilen rengi ana bileşene aktar    
+        onColorChange(newColor);
     };
     return(<div className="color-picker-container">
         <input 
@@ -18,8 +18,6 @@ function ColorPicker( { onColorChange } ){
         </input>
 
     </div>)
-    
 } 
-
 
 export default ColorPicker;

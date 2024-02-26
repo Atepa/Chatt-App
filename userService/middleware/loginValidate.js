@@ -7,6 +7,6 @@ function validateLoginUser(req, res, next) {
   }
 
   return next();
-};
+}
 
 module.exports = validateLoginUser;

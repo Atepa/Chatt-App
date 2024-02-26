@@ -32,9 +32,8 @@ export default function App() {
         <Route path="/" element={<Chat />} />
         <Route path="/user/info" element={<InfoUser />} />
         <Route path="/account/password/reset" element={<ForgotPassword />} />
-        <Route path="/account/password/reset/:userId" element={<RefreshPassword />} />
+        <Route path="/account/password/reset/:refreshToken/:userId" element={<RefreshPassword />} />
         {/* <Route path="/story/upload" element={<PrivateRoute element={<AddStory />} />} /> */}
-        
       </Routes>
     </BrowserRouter>
   );

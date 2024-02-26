@@ -19,7 +19,6 @@ export default function Register() {
       userPassword: "",
       confirmPassword: "",
       userGender: "",
-      userColor: "",
       userNickName: "",
     });
 
@@ -46,7 +45,7 @@ export default function Register() {
   };
 
   const handleValidation = () => {
-    const { userPassword, confirmPassword, userName, userMail, userGender, userNickName, userColor } = values;
+    const { userPassword, confirmPassword, userName, userMail, userGender, userNickName} = values;
     if (userPassword !== confirmPassword) {
       toast.error("Password and confirm password should be same.", toastOptions);
       return false;
@@ -75,26 +74,32 @@ export default function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (handleValidation()) {
-      const { userMail, userPassword, userName, userNickName, userColor, userGender } = values;
-      const { data } = await axios.post(registerRoute, {
+      const { userMail, userPassword, userName, userNickName, userGender } = values;
+      await axios.post(registerRoute, {
         userMail:userMail,
         userPassword:userPassword,
         userName:userName,
         userNickName:userNickName,
         userColor:userColor,
         userGender:userGender,
-      });
-
-      if (data.status === false) {
-        toast.error(data.msg, toastOptions);
-      }
-      if (data.status === true) {
-        localStorage.setItem(
-          process.env.REACT_APP_LOCALHOST_KEY,
-          JSON.stringify(data)
-        );
-        navigate("/");
-      }
+        },{
+          headers: {
+          'Content-Type': 'application/json',
+        }})
+      .then( response => {
+        if (response.status !== 200) {
+            toast.error(`Hata: ${response.data.msg}`, toastOptions);
+        } else {
+          navigate("/login");
+        }
+      })
+      .catch( error => {
+          if(error.response?.status === 404){
+            toast.error(`error -> ${ error.response.msg}`,toastOptions);
+          }
+          else
+            toast.error(`error -> ${ error.message}`,toastOptions);
+      })
     }
   };
 

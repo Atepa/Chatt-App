@@ -14,7 +14,6 @@ export default function  FileInput()  {
   const [imagePreview, setImagePreview] = useState(null);
   const [videoPreview, setVideoPreview] = useState(null);
   const [videoDuration, setVideoDuration] = useState(null);
-
   const fileInputRef = React.useRef(null);
   const maxSizeInMB = 20;
   const maxDurationInSeconds = 30;
@@ -121,8 +120,15 @@ export default function  FileInput()  {
     formData.append('duration', videoDuration);
     formData.append('senderUserNickName', currentUser.userNickName);
     formData.append('senderUserAvatarImage', currentUser.avatarImage);
-
-    axios.post( `${postStory}/${currentUser._id}` ,formData)
+    const token = JSON.parse(
+      localStorage.getItem('token')
+    )
+    axios.post( `${postStory}/${currentUser._id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': token
+      } 
+    }) 
     .then(res => {  
       toast.success("Kayıt Başarılı -- Yönlendirme yapılıyor...", toastOptions);
       setTimeout(() => {

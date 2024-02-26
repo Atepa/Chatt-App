@@ -1,7 +1,6 @@
-
-module.exports = function getCurrentDate(){
-    const currentDate = new Date();
-    const options = {
+module.exports = function getCurrentDate() {
+  const currentDate = new Date();
+  const options = {
     year: 'numeric',
     month: 'numeric',
     day: 'numeric',
@@ -10,7 +9,7 @@ module.exports = function getCurrentDate(){
     second: 'numeric',
     hour12: false,
     timeZone: 'Europe/Istanbul',
-    };
+  };
 
-    return currentDate.toLocaleString('tr-TR', options);;
-}
+  return currentDate.toLocaleString('tr-TR', options);
+};

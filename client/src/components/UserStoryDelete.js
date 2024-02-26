@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { MdDeleteForever } from "react-icons/md";
 import styled from "styled-components";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { deleteStory } from "../utils/APIRoutes";
 
-export default function UserStoryDelete({ storyId }) {
+export default function UserStoryDelete({ storyId, token }) {
+
   const toastOptions = {
     position: "bottom-right",
     autoClose: 8000,
@@ -15,7 +16,12 @@ export default function UserStoryDelete({ storyId }) {
   };
 
   const handleDelete = async () => {
-    await axios.delete(`${deleteStory}/${storyId}`)
+    await axios.delete(`${deleteStory}/${storyId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token,
+      },
+    })
     .then(res => {
         if(res.status !== 200) 
             toast.error(`err-> ${res.data.msg}`, toastOptions) 
