@@ -411,9 +411,10 @@ module.exports.getAccesStoryById = async function getAccesStoryById(req, res) {
 
 module.exports.getFriendsListByUserId = async function getFriendsListByUserId(req, res) {
   const { userId } = req.params;
-  await FriendsModel.findOne({ _id: userId }).select('friendsList')
+
+  await FriendsModel.findOne({ userId }).select('friendsList')
     .then((response) => {
-      if (!response) return res.status(404).json({ msg: 'Story Bulunamadı', status: false });
+      if (!response) return res.status(404).json({ msg: 'Kayıt Bulunamadı', status: false });
       return res.status(200).json({ response, status: true });
     })
     .catch((error) => {
@@ -428,7 +429,7 @@ module.exports.getFriendsListByUserId = async function getFriendsListByUserId(re
       } return res.status(500).json({ msg: 'Sunucu Hatası', error: error.message, status: false });
     });
 };
-
+// burada problem
 module.exports.postAddFriendByUserId = async function postAddFriendByUserId(req, res) {
   const { userId } = req.params;
   const {
@@ -439,7 +440,7 @@ module.exports.postAddFriendByUserId = async function postAddFriendByUserId(req,
     avatarImage,
   } = req.body;
 
-  await FriendsModel.findById(userId)
+  await FriendsModel.findOne({ userId })
     .then(async (response) => {
       if (!response) {
         const newFriend = new FriendsModel({
@@ -452,42 +453,29 @@ module.exports.postAddFriendByUserId = async function postAddFriendByUserId(req,
             avatarImage,
           }],
         });
-        await newFriend.save()
-          .then(() => res.status(200).json({ msg: 'Kayıt Başarılı', status: true }))
-          .catch((error) => res.status(500).json({ msg: 'Server Error', error: error.message, status: false }));
+        await newFriend.save();
+        return res.status(200).json({ msg: 'Kayıt Başarılı', status: true });
       }
 
+      const foundFriend = response.friendsList.reduce((found, friend) => {
+        if (friend.friendId.toString() === friendId.toString()) {
+          return friend;
+        }
+        return found;
+      }, null);
+      if (foundFriend) return res.status(208).json({ msg: 'Zaten Arkadaşsınız', status: true });
       response.friendsList.push({
-        friendId, userMail, userNickName, avatarImage, userName,
+        friendId,
+        userMail,
+        userNickName,
+        userName,
+        avatarImage,
       });
-      response.save()
-        .then((rsp) => {
-          if (!rsp) return res.status(404).json({ msg: 'Kayıt Başarısız', status: false });
-          return res.status(200).json({ msg: 'Kayıt Başarılı', status: true });
-        })
-        .catch((error) => {
-          if (error instanceof mongoose.Error.CastError) {
-            return res.status(400).json({ msg: 'Geçersiz ID', error: error.message, status: false });
-          } if (error instanceof mongoose.Error.ValidationError) {
-            return res.status(422).json({ msg: 'Doğrulama Hatası', error: error.message, status: false });
-          } if (error.code === 11000) {
-            return res.status(500).json({ msg: 'MongoDB Hatası', error: error.message, status: false });
-          } if (error instanceof SyntaxError) {
-            return res.status(400).json({ msg: 'Sözdizimi Hatası', error: error.message, status: false });
-          } return res.status(500).json({ msg: 'Sunucu Hatası', error: error.message, status: false });
-        });
+      await response.save()
+        .then(()=>  { return res.status(200).json({ msg: 'Kayıt Başarılı', status: true }); })
+        .catch((error) => { return res.status(500).json({ msg: `Server Error ${ error.message }`, status: false }) });
     })
-    .catch((error) => {
-      if (error instanceof mongoose.Error.CastError) {
-        return res.status(400).json({ msg: 'Geçersiz ID', error: error.message, status: false });
-      } if (error instanceof mongoose.Error.ValidationError) {
-        return res.status(422).json({ msg: 'Doğrulama Hatası', error: error.message, status: false });
-      } if (error.code === 11000) {
-        return res.status(500).json({ msg: 'MongoDB Hatası', error: error.message, status: false });
-      } if (error instanceof SyntaxError) {
-        return res.status(400).json({ msg: 'Sözdizimi Hatası', error: error.message, status: false });
-      } return res.status(500).json({ msg: 'Sunucu Hatası', error: error.message, status: false });
-    });
+    .catch((error) => res.status(500).json({ msg: 'Sunucu Hatası', error: error.message, status: false }));
 };
 
 module.exports.getSearchUser = async function getSearchUser(req, res) {

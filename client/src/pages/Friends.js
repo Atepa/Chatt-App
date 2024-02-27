@@ -1,24 +1,21 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios, { Axios } from "axios";
 import styled from "styled-components";
-import { useNavigate, Link, Navigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getStories, addFriend, getFriends, searchUser } from "../utils/APIRoutes";
+import { getFriends ,addFriend, searchUser } from "../utils/APIRoutes";
 import AddStory from "../components/AddStoryNavigate";
-import UserStoriesContacts from "../components/UserStories";
-import Atepa from "../assets/loader.gif";
-import logo from "../assets/LOGO.png";
 import MainPageNavigate from "../components/MainPageNavigate";
 
 export default function InfoStoryStory() {
   const [currentUser, setCurrentUser] = useState(undefined);
 	const [currentSearchUser, setCurrentSearchUser] = useState(undefined);
-
   const [token, setToken] = useState(); 
   const [searchText, setSearchText] = useState("");
   const [searchResult, setSearchResult] = useState([]);
   const [currentSelected, setCurrentSelected] = useState(undefined);
+  const [userFriends, setUserFriends] = useState(undefined);
 
   const page = 1;
   const perPage = 15;
@@ -33,41 +30,46 @@ export default function InfoStoryStory() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
+    const fetchData = () => {
+      const userToken = localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY);
+      if (!userToken) {
         navigate("/login");
-      } else {
-        setCurrentUser(
-          JSON.parse(
-            localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-          ));
+        return;
+      }
+      const userData = JSON.parse(userToken);
+      setCurrentUser(userData);
+      setToken(userData.token);
+      userFriends(userData._id, userData.token);
+    };
+  
+    const userFriends = async (userId, token) => {
+      try {
+        const response = await axios.get(`${getFriends}/${userId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token,
+          },
+        });
+        setUserFriends(response.data.response.friendsList);
+      } catch (error) {
+        toast.error(`${error.message}`, toastOptions);
       }
     };
+  
     fetchData();
-  }, [navigate]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      
-    };
-    fetchData();
-  }, [currentUser, navigate]);
+  }, [navigate,setUserFriends]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.get(`${searchUser}?text=${searchText}&page=${page}&perPage=${perPage}`,
+      await axios.get(`${searchUser}?text=${searchText}&page=${page}&perPage=${perPage}`,
       {
         headers: {
         'Content-Type': 'application/json',
         'token': token,
         },
-      });
-      console.log(response.data.response);
-      setSearchResult(response.data.response);
-    } catch (error) {
-      console.error("Error searching friends:", error);
-    }
+      })
+      .then((response) => setSearchResult(response.data.response))
+      .catch((error) => toast.error(`${error.message}`, toastOptions));
   };
 
   const changeCurrentUser = (index, user) => {
@@ -78,24 +80,22 @@ export default function InfoStoryStory() {
 	const postFriend = async () => {
 
 		if(!currentSearchUser)  return  toast.error(`Bir Kullanıcı Seçmediniz`, toastOptions);
-    console.log(currentSearchUser);
-			const response =await axios.post(`${addFriend}/${currentUser._id}`, {
+		  await axios.post(`${addFriend}/${currentUser._id}`, {
 				friendId: currentSearchUser._id,
 				userMail: currentSearchUser.userMail,
 				userNickName: currentSearchUser.userNickName,
 				userName: currentSearchUser.userName,
 				avatarImage: currentSearchUser.avatarImage
 			})
-			.then((response) => console.log(response) )
-			.catch((error) => console.log(error) )
+			.then((response) => toast.success(`${response.data.msg}`, toastOptions))
+			.catch((error) => toast.error(`${error.message}`, toastOptions));
 	};
-
 
   return (
     <>
       <FormContainer>
       <div className="forms-container">
-        <form className="add-story-form">
+        <form className="add-navigate-form">
           <h>Anasayfa</h>
           <MainPageNavigate />
           <h></h>
@@ -109,19 +109,45 @@ export default function InfoStoryStory() {
         </form>
         <form className="add-frineds" onSubmit={handleSearch}>
           <h>Ara</h> 
-          <textarea
+          <input
+            type="text"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            placeholder="Arkadaş ara..."
-            ></textarea>
+            placeholder="Arkadaş Ara..."
+            name="userMail"
+            minLength="3"
+          />
             <button type="submit">Ara</button>
             <div className="search-result">
-            {searchResult.map((user, index) => {
+              {searchResult.map((user, index) => {
+                return (
+                  <div
+                    key={user._id}
+                    className={`user ${index === currentSelected ? "selected" : ""}`}
+                    onClick={() => changeCurrentUser(index, user)}
+                  >
+                    <div className="avatar">
+                      { <img
+                        src={`data:image/svg+xml;base64,${user.avatarImage}`}
+                        alt={`${user.userNickName}`}
+                      /> }
+                    </div>
+                    <div className="userName">
+                      <h3>{user.userNickName}</h3>
+                    </div>
+                  </div>
+                );
+              })} 
+            </div>
+              <button type="button" onClick={postFriend} >Ekle</button>
+          </form >
+          <form className="users-friends">
+          <h>Arkadaşlarım</h>
+            {userFriends && userFriends.map((user, index) => {
               return (
                 <div
-                  key={user._id}
-                  className={`user ${index === currentSelected ? "selected" : ""}`}
-                  onClick={() => changeCurrentUser(index, user)}
+                  key={user.friendId}
+                  className={`user`}
                 >
                   <div className="avatar">
                     { <img
@@ -135,17 +161,9 @@ export default function InfoStoryStory() {
                 </div>
               );
             })} 
+
+          </form >
         </div>
-					<form className="add-button">
-						<button type="button" onClick={postFriend} >Ekle</button>
-					</form>
-        </form >
-				
-        <form className="users-friends">
-        <h>Arkadaşlarım</h>
-         
-        </form >
-      </div>
       <span>
         <Link to="/">Go Chat</Link>
       </span>
@@ -167,13 +185,34 @@ const FormContainer = styled.div`
   overflow-y: auto;
   overflow-x: auto;
 
+  h{
+    color: white;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  button {
+    background-color: #4e0eff;
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 0.4rem;
+    font-size: 1rem;
+    text-transform: uppercase;
+    &:hover {
+      background-color: #4e0eff;
+    }
+  }
   .forms-container {
     display: flex;
     gap: 1rem; 
   }
-  .add-story-form {
+
+  .add-navigate-form {
     height: 70vh;
-    width: 13vw;
+    width: 15vw;
     align-self: flex-center;
     align-items: center;
     button {
@@ -191,12 +230,12 @@ const FormContainer = styled.div`
       }
     }
   }
-
-  .search-result {
+  .users-friends {
+    height: 70vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow: auto;
+    overflow: auto; 
     gap: 0.8rem;
     &::-webkit-scrollbar {
       width: 0.2rem;
@@ -210,7 +249,7 @@ const FormContainer = styled.div`
       background-color: #ffffff34;
       min-height: 4.5rem;
       cursor: pointer;
-      width: 90%;
+      width: 100%;
       border-radius: 0.2rem;
       padding: 0.4rem;
       display: flex;
@@ -232,43 +271,50 @@ const FormContainer = styled.div`
       background-color: #9a86f3;
     }
   }
-  .users-has-story {
-    height: 70vh;
-    width: 23vw;
-    align-self: flex-center;
-    align-items: center;
-  }
-  .access-story-form{
-    height: 70vh;
-    width: 23vw;
+
+  .search-result {
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: white;
-  }
-  .users-story {
-    height: 70vh;
-    width: 28vw;
-    align-self: flex-center;
-    align-items: center;
-    img {
-      width: 23vw;
-      height: 48vh;
-      object-fit: cover; 
-      object-position: center; 
+    overflow: auto; 
+    max-height: 20vh; 
+    min-height: 20vh; 
+    gap: 0.8rem;
+    &::-webkit-scrollbar {
+      width: 0.2rem;
+      &-thumb {
+        background-color: #ffffff39;
+        width: 0.1rem;
+        border-radius: 1rem;
+      }
+    }
+    .user {
+      background-color: #ffffff34;
+      min-height: 4.5rem;
+      cursor: pointer;
+      width: 100%;
+      border-radius: 0.2rem;
+      padding: 0.4rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      transition: 0.5s ease-in-out;
+      .avatar {
+        img {
+          height: 3rem;
+        }
+      }
+      .userName {
+        h3 {
+          color: white;
+        }
+      }
+    }
+    .selected {
+      background-color: #9a86f3;
     }
   }
-  h{
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 16px;
-  }
- 
-  .users-has-story {
-    align-self: flex;
-    grid-template-columns: 25% 75%;
-  }
+
   form {
     display: flex;
     flex-direction: column;

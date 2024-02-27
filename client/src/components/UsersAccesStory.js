@@ -25,5 +25,4 @@ justify-content: center;
 align-items: center;
 background-color: #080420;
 color: #ffffff;
-
-  `;
+`;
