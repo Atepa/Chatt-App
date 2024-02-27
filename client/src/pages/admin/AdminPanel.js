@@ -9,74 +9,74 @@ import { adminRoute, adminUsersRoute } from "../../utils/APIRoutes";
 import DataTable from 'react-data-table-component';
 
 export default function Login() {
-    const [users, setUsers] = useState([]);
-    const [localpage, setLocalPage] = useState([]);
-    const [filter, setFilter] = useState([]);
-    const { page } = useParams();
+  const [users, setUsers] = useState([]);
+  const [localpage, setLocalPage] = useState([]);
+  const [filter, setFilter] = useState([]);
+  const { page } = useParams();
 
 
-    function handleFilter(event){
-      const searchTerm = event.target.value.toLowerCase();
+  function handleFilter(event){
+    const searchTerm = event.target.value.toLowerCase();
 
-      const newData = filter.filter(row => {
-        // Mail, createdAt, ve _id alanlarında arama yapılır
-        return (
-          row._id.toLowerCase().includes(searchTerm) ||
-          row.userMail.toLowerCase().includes(searchTerm) ||
-          row.userName.toLowerCase().includes(searchTerm) ||
-          row.userCreatedAt.toLowerCase().includes(searchTerm) ||
-          row.userLastAccessTime.toLowerCase().includes(searchTerm)
-        );
-      });
-      setUsers(newData);
-    };
+    const newData = filter.filter(row => {
+      // Mail, createdAt, ve _id alanlarında arama yapılır
+      return (
+        row._id.toLowerCase().includes(searchTerm) ||
+        row.userMail.toLowerCase().includes(searchTerm) ||
+        row.userName.toLowerCase().includes(searchTerm) ||
+        row.userCreatedAt.toLowerCase().includes(searchTerm) ||
+        row.userLastAccessTime.toLowerCase().includes(searchTerm)
+      );
+    });
+    setUsers(newData);
+  };
 
-    const handleViewDetails = (row) => {
-      navigate(`/admin/user/${row._id.toString()}`);
-    };
-    
+  const handleViewDetails = (row) => {
+    navigate(`/admin/user/${row._id.toString()}`);
+  };
+  
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const columns = [
-        {
-            name: 'Id',
-            selector: row => row._id,
-            sortable: true,
-        },
-        {
-            name: 'Mail',
-            selector: row => row.userMail,
-            sortable: true,
-        },
-        {
-            name: 'Username',
-            selector: row => row.userName,
-            sortable: true,
-        },
-        {
-            name: 'CreatedAt',
-            selector: row => row.userCreatedAt,
-            sortable: true,
-        },
-        {
-            name: 'IsActive',
-            selector: row => row.userIsActive,
-            cell: row => <span>{row.userIsActive ? 'Active' : 'Inactive'}</span>,
-            sortable: true,
-        },
-        {
-            name: 'Last Access',
-            selector: row => row.userLastAccessTime,
-            sortable: true,
-        },
-        {
-            name: 'Actions',
-            cell: row => (
-              <button onClick={() => handleViewDetails(row)}>Kullanıcı Bilgileri</button>
-            ),
-        },
-    ]
+  const columns = [
+    {
+      name: 'Id',
+      selector: row => row._id,
+      sortable: true,
+    },
+    {
+      name: 'Mail',
+      selector: row => row.userMail,
+      sortable: true,
+    },
+    {
+      name: 'Username',
+      selector: row => row.userName,
+      sortable: true,
+    },
+    {
+      name: 'CreatedAt',
+      selector: row => row.userCreatedAt,
+      sortable: true,
+    },
+    {
+      name: 'IsActive',
+      selector: row => row.userIsActive,
+      cell: row => <span>{row.userIsActive ? 'Active' : 'Inactive'}</span>,
+      sortable: true,
+    },
+    {
+      name: 'Last Access',
+      selector: row => row.userLastAccessTime,
+      sortable: true,
+    },
+    {
+      name: 'Actions',
+      cell: row => (
+        <button onClick={() => handleViewDetails(row)}>Kullanıcı Bilgileri</button>
+      ),
+    },
+  ]
 
     const toastOptions = {
     position: "bottom-right",

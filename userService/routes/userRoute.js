@@ -39,6 +39,12 @@ authRouter.get('/allusers/:id', authController.getAllUsers);
 
 authRouter.post('/setavatar/:id', tokenValidate, authController.setAvatar);
 
+authRouter.get('/friends-list/:userId', authController.getFriendsListByUserId);
+
+authRouter.post('/add-friend/:userId', authController.postAddFriendByUserId);
+
+authRouter.get('/search-user', authController.getSearchUser);
+
 // story
 authRouter.get('/story', tokenValidate, authController.getStories);
 

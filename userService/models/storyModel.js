@@ -54,4 +54,4 @@ const StoryScheman = mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('Stories', StoryScheman);
+module.exports = mongoose.model('stories', StoryScheman);

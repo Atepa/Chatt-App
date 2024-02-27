@@ -28,4 +28,4 @@ const AccessUsers = mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model('AccessUsersStory', AccessUsers);
+module.exports = mongoose.model('accessusersstory', AccessUsers);

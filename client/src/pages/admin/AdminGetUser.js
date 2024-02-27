@@ -41,7 +41,6 @@ export default function UserDetail () {
     return true;
   };
 
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (validateForm()) {
@@ -56,7 +55,6 @@ export default function UserDetail () {
       });
   
       const data = response.data;
-      console.log(data.X_Access_Token);
   
       if (data.status === false) {
         toast.error(data.msg, toastOptions);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link} from "react-router-dom";
 import { io } from "socket.io-client";
 import styled, { keyframes } from "styled-components";
 import { allUsersRoute, host } from "../utils/APIRoutes";
@@ -107,7 +107,11 @@ export default function Chat() {
             <ChatContainer currentChat={currentChat} socket={socket} />
           )}
         </div>
+        <span>
+								<Link to="/friends">Add Friends</Link>
+			</span>
       </Container>
+     
     </>
   );
 }
@@ -134,6 +138,19 @@ const Container = styled.div`
       grid-template-columns: 35% 65%;
     }
   }
+  span {
+    color: white;
+    text-transform: uppercase;
+    display: inline-block; /* Öğeyi satır düzeyinde blok öğe olarak ayarlar */
+    text-align: left;
+    a {
+      color: #4aaaff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  }
+  
+  
   `;
   const Alert = styled.div`
     background-color: yellow  ;

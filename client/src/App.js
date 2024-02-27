@@ -9,6 +9,7 @@ import AdminPanel from "./pages/admin/AdminPanel";
 import AdminGetUser from "./pages/admin/AdminGetUser";
 import AddStory from "./pages/AddStory";
 import Story from "./pages/Story";
+import Friends from "./pages/Friends";
 import InfoStory from "./pages/InfoStory";
 import InfoUser from "./pages/InfoUser";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="story" element={<Story />} />
         <Route path="story/upload" element={<AddStory />} /> 
         <Route path="/" element={<Chat />} />
+        <Route path="/friends" element={<Friends />} />
         <Route path="/user/info" element={<InfoUser />} />
         <Route path="/account/password/reset" element={<ForgotPassword />} />
         <Route path="/account/password/reset/:refreshToken/:userId" element={<RefreshPassword />} />
