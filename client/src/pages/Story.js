@@ -19,7 +19,6 @@ export default function Story() {
   const [currentUser, setCurrentUser] = useState(undefined);
   const [currentStory, setCurrentStory] = useState(undefined);
   const [token, setToken] = useState('');
-  const [storySelected, setStorySelected] = useState(false); // Hikaye seçildi mi?
 
   const toastOptions = {
     position: "bottom-right",
@@ -80,7 +79,7 @@ export default function Story() {
               setUserHasStory(response.data.response);
             }
           } catch (error) {
-            // if(error.response.status === 401) {
+            if(error.response.status === 401) {
               const success = await LogoutFunction();
               if (success) {
                 toast.error("oturumun süresi bitmiştir", toastOptions);
@@ -88,7 +87,8 @@ export default function Story() {
               } else {
                 toast.error("Logout failed", toastOptions);
               }
-            // }
+            }
+            else toast.error(`${error.message}`, toastOptions);
           }
         } else {
           navigate("/setAvatar");
@@ -108,6 +108,7 @@ export default function Story() {
 
     await axios.get(`${getStories}/${story._id}`,{
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': token
       }
     })
@@ -155,9 +156,9 @@ export default function Story() {
         }, {
           headers: {
             'Authorization': token,
+            'Content-Type': 'application/json',
           },
         });
-        console.log("Post Access Story successful");
       } catch (error) {
         if (error.response?.status === 404) {
           toast.error(`${error.response.data.msg}`, toastOptions);

@@ -14,6 +14,7 @@ export default function SetAvatar() {
   const [avatars, setAvatars] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAvatar, setSelectedAvatar] = useState(undefined);
+  const [token, setToken] = useState(undefined);
 
   const toastOptions = {
     position: "bottom-right",
@@ -40,9 +41,9 @@ export default function SetAvatar() {
       const  result = await JSON.parse(
         localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
       );
-      const token = JSON.parse(
+      const token = setToken(JSON.parse(
         localStorage.getItem('token')
-      );		
+      ));		
       const axiosInstance = axios.create({
         headers: {
           'Content-Type': 'application/json',
@@ -81,9 +82,12 @@ export default function SetAvatar() {
       const data = [];
       for (let i = 0; i < 4; i++) {
         try {
-          const image = await axios.get(
-            `${api}/${Math.round(Math.random() * 1000)}`
-          );
+          const image = await axios.get(`${api}/${Math.round(Math.random() * 1000)}`,{
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token,
+            },
+          } );
           const buffer = new Buffer(image.data);
           data.push(buffer.toString("base64"));
         } catch (error) {
@@ -93,7 +97,6 @@ export default function SetAvatar() {
       setAvatars(data);
       setIsLoading(false);
     };
-  
     fetchAvatars();
   }, []);
 

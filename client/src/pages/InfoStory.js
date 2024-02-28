@@ -64,7 +64,7 @@ export default function InfoStoryStory() {
         if (currentUser.isAvatarImageSet) {
           setToken(JSON.parse(
             localStorage.getItem('token')
-          )) ;
+          ));
           const tkn = JSON.parse(
             localStorage.getItem('token')
           );
@@ -110,9 +110,7 @@ export default function InfoStoryStory() {
         'Content-Type': 'application/json',
         'Authorization': token,
       }
-      });
-      console.log(story);
-      
+    });      
     await axiosInstance.get(`${getAccessStory}/${currentUser._id}/${story._id}`)
     .then( (response) => {
       if (response.status !== 200)  toast.error(`${response.data.msg}`, toastOptions);

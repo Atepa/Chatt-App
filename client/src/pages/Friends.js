@@ -4,9 +4,10 @@ import styled from "styled-components";
 import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getFriends ,addFriend, searchUser } from "../utils/APIRoutes";
+import { getFriends ,addFriend, searchUser, removeFriend } from "../utils/APIRoutes";
 import AddStory from "../components/AddStoryNavigate";
 import MainPageNavigate from "../components/MainPageNavigate";
+import { BiSolidImageAdd } from "react-icons/bi";
 
 export default function InfoStoryStory() {
   const [currentUser, setCurrentUser] = useState(undefined);
@@ -16,9 +17,12 @@ export default function InfoStoryStory() {
   const [searchResult, setSearchResult] = useState([]);
   const [currentSelected, setCurrentSelected] = useState(undefined);
   const [userFriends, setUserFriends] = useState(undefined);
-
+  const [currentSelectedFriend, setCurrentSelectedFriend] = useState(undefined);
+  const [currentFriendUser, setCurrentFriendUser] = useState(undefined);
+  
+  const navigate = useNavigate();
   const page = 1;
-  const perPage = 15;
+  const perPage = 20;
   const toastOptions = {
     position: "bottom-right",
     autoClose: 10000,
@@ -27,7 +31,19 @@ export default function InfoStoryStory() {
     theme: "dark",
   };
 
-  const navigate = useNavigate();
+  const getUserFriends = async (userId, tokn) => {
+    try {
+      const response = await axios.get(`${getFriends}/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': tokn,
+        },
+      });
+      setUserFriends(response.data.response.friendsList);
+    } catch (error) {
+      toast.error(`${error.message}`, toastOptions);
+    }
+  };
 
   useEffect(() => {
     const fetchData = () => {
@@ -38,24 +54,14 @@ export default function InfoStoryStory() {
       }
       const userData = JSON.parse(userToken);
       setCurrentUser(userData);
-      setToken(userData.token);
-      userFriends(userData._id, userData.token);
+      setToken(JSON.parse(
+        localStorage.getItem('token')
+      ));      
+      const tokn=JSON.parse(
+        localStorage.getItem('token')
+      );
+      getUserFriends(userData._id, tokn);
     };
-  
-    const userFriends = async (userId, token) => {
-      try {
-        const response = await axios.get(`${getFriends}/${userId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'token': token,
-          },
-        });
-        setUserFriends(response.data.response.friendsList);
-      } catch (error) {
-        toast.error(`${error.message}`, toastOptions);
-      }
-    };
-  
     fetchData();
   }, [navigate,setUserFriends]);
 
@@ -65,7 +71,7 @@ export default function InfoStoryStory() {
       {
         headers: {
         'Content-Type': 'application/json',
-        'token': token,
+        'Authorization': token,
         },
       })
       .then((response) => setSearchResult(response.data.response))
@@ -77,8 +83,12 @@ export default function InfoStoryStory() {
     setCurrentSearchUser(user)
   };
 
-	const postFriend = async () => {
+  const changeCurrentFriend = (index, user) => {
+    setCurrentSelectedFriend(index);
+    setCurrentFriendUser(user)
+  };
 
+	const postFriend = async () => {
 		if(!currentSearchUser)  return  toast.error(`Bir Kullanıcı Seçmediniz`, toastOptions);
 		  await axios.post(`${addFriend}/${currentUser._id}`, {
 				friendId: currentSearchUser._id,
@@ -86,8 +96,32 @@ export default function InfoStoryStory() {
 				userNickName: currentSearchUser.userNickName,
 				userName: currentSearchUser.userName,
 				avatarImage: currentSearchUser.avatarImage
-			})
+			},{
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+        }
+      })
 			.then((response) => toast.success(`${response.data.msg}`, toastOptions))
+			.catch((error) => toast.error(`${error.message}`, toastOptions));
+	};
+
+  const DeleteFriend = async (e) => {
+		e.preventDefault();
+		if(!currentFriendUser)  return  toast.error(`Bir Arkadaş Seçmediniz`, toastOptions);
+    toast.error(`${currentFriendUser.friendId}`,toastOptions);
+		  await axios.delete(`${removeFriend}/${currentUser._id}/${currentFriendUser.friendId}`, 
+			{
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+        }
+      })
+			.then((response) => 
+      {
+        toast.success(`${response.data.msg}`, toastOptions);
+        getUserFriends(currentUser._id, token);
+      })
 			.catch((error) => toast.error(`${error.message}`, toastOptions));
 	};
 
@@ -101,7 +135,9 @@ export default function InfoStoryStory() {
           <h></h>
           <h></h>
           <h>Arkadaşlıktan Çıkar</h>
-          {/* <UserStoryDelete storyId={ currentStoryId } user={ currentUser } token={token} /> */}
+          <Button onClick={DeleteFriend}>
+            <BiSolidImageAdd />
+          </Button>
           <h></h>
           <h></h>
           <h>Story Ekle</h>
@@ -145,9 +181,10 @@ export default function InfoStoryStory() {
           <h>Arkadaşlarım</h>
             {userFriends && userFriends.map((user, index) => {
               return (
-                <div
+                <div 
                   key={user.friendId}
-                  className={`user`}
+                  className={`user ${index === currentSelectedFriend ? "selected" : ""}`}
+                  onClick={() => changeCurrentFriend(index, user)}
                 >
                   <div className="avatar">
                     { <img
@@ -161,7 +198,6 @@ export default function InfoStoryStory() {
                 </div>
               );
             })} 
-
           </form >
         </div>
       <span>
@@ -172,6 +208,21 @@ export default function InfoStoryStory() {
     </>
   );
 }
+
+const Button = styled.button`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  background-color: purple;
+  border: none;
+  cursor: pointer;
+  svg {
+    font-size: 1.3rem;
+    color: #ebe7ff;
+  }
+`;
 
 const FormContainer = styled.div`
   height: 100vh;
@@ -345,5 +396,4 @@ const FormContainer = styled.div`
       font-weight: bold;
     }
   }
-  
 `;

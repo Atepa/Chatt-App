@@ -25,7 +25,6 @@ export default function HasStoryContacts({ contacts, changeChat }) {
         setCurrentUserName(contacts.createdAt);
       } catch (error) {
         toast.error(`${error.message}`,toastOptions)
-        console.error("Error fetching user data:", error);
       }
     };
     fetchData();

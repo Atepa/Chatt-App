@@ -10,7 +10,6 @@ export default function Story() {
     const currentPath = window.location.pathname;
     currentPath === "/" ? navigate("/story") : navigate("/story/upload")
   };
-
   return (
     <Button onClick={handleClick}>
       <BiSolidImageAdd />

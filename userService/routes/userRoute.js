@@ -39,11 +39,13 @@ authRouter.get('/allusers/:id', authController.getAllUsers);
 
 authRouter.post('/setavatar/:id', tokenValidate, authController.setAvatar);
 
-authRouter.get('/friends-list/:userId', authController.getFriendsListByUserId);
+authRouter.get('/friends-list/:userId', tokenValidate, authController.getFriendsListByUserId);
 
-authRouter.post('/add-friend/:userId', authController.postAddFriendByUserId);
+authRouter.post('/add-friend/:userId', tokenValidate, authController.postAddFriendByUserId);
 
-authRouter.get('/search-user', authController.getSearchUser);
+authRouter.get('/search-user', tokenValidate, authController.getSearchUser);
+
+authRouter.delete('/remove-friend/:userId/:friendId', tokenValidate, authController.deleteFriendByFriendId);
 
 // story
 authRouter.get('/story', tokenValidate, authController.getStories);

@@ -16,6 +16,7 @@ export default function Chat() {
   const [contacts, setContacts] = useState([]);
   const [currentChat, setCurrentChat] = useState(undefined);
   const [currentUser, setCurrentUser] = useState(undefined);
+  const [token, setToken] = useState('');
 
   const toastOptions = {
     position: "bottom-right",
@@ -49,9 +50,9 @@ export default function Chat() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = JSON.parse(
+      const token = setToken(JSON.parse(
         localStorage.getItem('token')
-      );     
+      ));     
        if (currentUser) {
         if (currentUser.isAvatarImageSet) {
           const axiosInstance = axios.create({
@@ -96,22 +97,18 @@ export default function Chat() {
   return (
     <>
       <Container>
-        {/* <Alert>
-          Mesajlarınız her gün saat 00.00 ve 12.00 da silinir...
-        </Alert> */}
         <div className="container">
           <Contacts contacts={contacts} changeChat={handleChatChange} />
           {currentChat === undefined ? (
             <Welcome />
           ) : (
-            <ChatContainer currentChat={currentChat} socket={socket} />
+            <ChatContainer currentChat={currentChat} socket={socket} token={token} />
           )}
         </div>
         <span>
 								<Link to="/friends">Add Friends</Link>
 			</span>
       </Container>
-     
     </>
   );
 }

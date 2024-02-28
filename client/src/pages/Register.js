@@ -8,19 +8,18 @@ import "react-toastify/dist/ReactToastify.css";
 import { registerRoute } from "../utils/APIRoutes";
 import  ColorPicker  from "../components/ColorPicker";
 
-
 export default function Register() {
   const navigate = useNavigate();
-  
-    const [userColor, setUserColor] = useState('#SET-COLOR');
-    const [values, setValues] = useState({
-      userName: "",
-      userMail: "",
-      userPassword: "",
-      confirmPassword: "",
-      userGender: "",
-      userNickName: "",
-    });
+
+  const [userColor, setUserColor] = useState('#SET-COLOR');
+  const [values, setValues] = useState({
+    userName: "",
+    userMail: "",
+    userPassword: "",
+    confirmPassword: "",
+    userGender: "",
+    userNickName: "",
+  });
 
   const toastOptions = {
     position: "bottom-right",
@@ -94,11 +93,8 @@ export default function Register() {
         }
       })
       .catch( error => {
-          if(error.response?.status === 404){
-            toast.error(`${ error.response.msg}`,toastOptions);
-          }
-          else
-            toast.error(`${ error.message}`,toastOptions);
+          if(error.response?.status === 404) toast.error(`${ error.response.msg}`,toastOptions)
+          else toast.error(`${ error.message}`,toastOptions);
       })
     }
   };

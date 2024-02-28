@@ -20,6 +20,7 @@ export default function InfoUser() {
   const [userGender, setUserGender] = useState("");
   const [userColor, setUserColor] = useState('#SET-COLOR'); 
   const [currentUserId, setCurrentUserId] = useState(undefined); 
+  const [token, setToken] = useState(undefined); 
 
   const [standartValues, setStandartValues] = useState({
     userName: "",
@@ -57,13 +58,17 @@ export default function InfoUser() {
 				localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
 			);
       setCurrentUserId(users._id)
-      const token = JSON.parse(
+      setToken(JSON.parse(
+        localStorage.getItem('token')
+      ));		
+      const tkn = JSON.parse(
         localStorage.getItem('token')
       );			
+
       await axios.get(`${getUserInfo}/${users._id}` ,{
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token,
+          'Authorization': tkn,
         }
       })
 			.then(res => { 
@@ -151,14 +156,12 @@ export default function InfoUser() {
 
   const handleSubmitStandartData = async (event) => {
     event.preventDefault();
-    if (handleValidationStandartData()) {
-      const token = JSON.parse(
-        localStorage.getItem('token')
-      );		
+    if (handleValidationStandartData()) {		
       await axios.put(`${putUserInfo}/${currentUserId}`, {
         standartValues,
       }, {
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': token
         }
       })
@@ -181,11 +184,15 @@ export default function InfoUser() {
 
   const handleSubmitCustomData = async (event) => {
     event.preventDefault();
-
     if (handleValidationCustomData()) {
       await axios.put(`${putUserPasswordInfo}/${currentUserId}`,{
         oldUserPassword: customValues.currentPass,
         newUserPassword: customValues.newPass,
+      },{
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+        },
       })
       .then(res => {
         if(res.data.status === true){

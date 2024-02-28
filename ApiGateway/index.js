@@ -13,22 +13,10 @@ const port = 8080;
 
 app.use(expressWinston.logger({
   transports: [
-    // new transports.File({
-    //   level: 'warn',
-    //   filename: 'logWarning.log',
-    // }),
-    // new transports.File({
-    //   level: 'error',
-    //   filename: 'logErroring.log',
-    // }),
-    // new transports.File({
-    //   level: 'info',
-    //   filename: 'logInfoing.log',
-    // }),
-    // new transports.File({
-    //   level: 'debug',
-    //   filename: 'logDebuging.log',
-    // }),
+    new transports.File({
+      level: 'debug',
+      filename: 'logDebuging.log',
+    }),
     new transports.MongoDB({
       db: process.env.Mongodb_Logger_Uri,
       collection: process.env.Mongodb_Logger_Collection,

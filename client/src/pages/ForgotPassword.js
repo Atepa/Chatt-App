@@ -31,8 +31,6 @@ export default function ForgotPassword() {
 
   const validateForm = () => {
     const { userMail } = values;
-    console.log(userMail);
-
     if (userMail === "") {
       toast.error("Email and Password is required.", toastOptions);
       return false;

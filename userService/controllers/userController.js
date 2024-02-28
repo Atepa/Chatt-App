@@ -5,7 +5,6 @@ const UserModel = require('../models/userModel');
 const StoryModel = require('../models/storyModel');
 const FriendsModel = require('../models/friendsModel');
 const postRabbitMqHelper = require('../helper/postRabbitMq');
-// const getCurrentDate = require('../helper/getCurrentDate');
 
 exports.postCreateUser = async function postCreateUser(req, res) {
   const {
@@ -429,7 +428,7 @@ module.exports.getFriendsListByUserId = async function getFriendsListByUserId(re
       } return res.status(500).json({ msg: 'Sunucu Hatası', error: error.message, status: false });
     });
 };
-// burada problem
+
 module.exports.postAddFriendByUserId = async function postAddFriendByUserId(req, res) {
   const { userId } = req.params;
   const {
@@ -472,7 +471,7 @@ module.exports.postAddFriendByUserId = async function postAddFriendByUserId(req,
         avatarImage,
       });
       await response.save()
-        .then(()=>  { return res.status(200).json({ msg: 'Kayıt Başarılı', status: true }); })
+        .then(()=> { return res.status(200).json({ msg: 'Kayıt Başarılı', status: true }); })
         .catch((error) => { return res.status(500).json({ msg: `Server Error ${ error.message }`, status: false }) });
     })
     .catch((error) => res.status(500).json({ msg: 'Sunucu Hatası', error: error.message, status: false }));
@@ -498,4 +497,31 @@ module.exports.getSearchUser = async function getSearchUser(req, res) {
       return res.status(200).json({ response, status: true });
     })
     .catch((error) => res.status(404).json({ msg: `Server Error -- ${error.message}`, status: false }));
+};
+
+module.exports.deleteFriendByFriendId = async function deleteFriendByFriendId(req, res) {
+  const { userId, friendId } = req.params;
+
+  try {
+    const friendRecord = await FriendsModel.findOne({ userId });
+
+    if (!friendRecord) {
+      return res.status(404).json({ msg: 'Kullanıcı bulunamadı', status: false });
+    }
+
+    const updatedFriendsList = friendRecord.friendsList.filter(
+      (friend) => friend.friendId.toString() !== friendId.toString(),
+    );
+
+    if (updatedFriendsList.length === friendRecord.friendsList.length) {
+      return res.status(404).json({ msg: 'Arkadaş bulunamadı', status: false });
+    }
+
+    friendRecord.friendsList = updatedFriendsList;
+    await friendRecord.save();
+
+    return res.status(200).json({ msg: 'Arkadaş başarıyla silindi', status: true });
+  } catch (error) {
+    return res.status(500).json({ msg: 'Sunucu Hatası', error: error.message, status: false });
+  }
 };

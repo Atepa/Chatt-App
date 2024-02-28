@@ -122,7 +122,7 @@ export default function  FileInput()  {
         'Authorization': token
       } 
     }) 
-    .then(res => {  
+    .then(() => {  
       toast.success("Kayıt Başarılı -- Yönlendirme yapılıyor...", toastOptions);
       setTimeout(() => {
         if (fileInputRef.current) {
@@ -133,7 +133,6 @@ export default function  FileInput()  {
     })
     .catch(err =>{
       toast.error(`Kayıt Başarısız -> ${err.errorMessage}`, toastOptions);
-
     })
   }
 
