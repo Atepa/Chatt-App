@@ -8,8 +8,13 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const expressWinston = require('express-winston');
 const socket = require('socket.io');
 const { transports, format } = require('winston');
+const rateLimit = require('./rateLimit');
+const globalError = require('./globalError');
 
 const port = 8080;
+
+app.use(rateLimit);
+app.use(globalError);
 
 app.use(expressWinston.logger({
   transports: [

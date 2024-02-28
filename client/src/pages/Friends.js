@@ -25,7 +25,7 @@ export default function InfoStoryStory() {
   const perPage = 20;
   const toastOptions = {
     position: "bottom-right",
-    autoClose: 10000,
+    autoClose: 4000,
     pauseOnHover: true,
     draggable: true,
     theme: "dark",
@@ -102,14 +102,16 @@ export default function InfoStoryStory() {
           'Authorization': token,
         }
       })
-			.then((response) => toast.success(`${response.data.msg}`, toastOptions))
+			.then((response) => {
+        toast.success(`${response.data.msg}`, toastOptions);
+        getUserFriends(currentUser._id, token);
+      })
 			.catch((error) => toast.error(`${error.message}`, toastOptions));
 	};
 
   const DeleteFriend = async (e) => {
 		e.preventDefault();
 		if(!currentFriendUser)  return  toast.error(`Bir Arkadaş Seçmediniz`, toastOptions);
-    toast.error(`${currentFriendUser.friendId}`,toastOptions);
 		  await axios.delete(`${removeFriend}/${currentUser._id}/${currentFriendUser.friendId}`, 
 			{
         headers: {
@@ -122,7 +124,7 @@ export default function InfoStoryStory() {
         toast.success(`${response.data.msg}`, toastOptions);
         getUserFriends(currentUser._id, token);
       })
-			.catch((error) => toast.error(`${error.message}`, toastOptions));
+			.catch((error) => toast.error(`İşlem Başarısız ${error.message}`, toastOptions));
 	};
 
   return (
