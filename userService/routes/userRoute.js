@@ -35,7 +35,7 @@ authRouter.post('/refresh/password/:refreshToken/:userId', authController.postRe
 
 authRouter.post('/refresh/has-refresh-password/:refreshToken/:userId', authController.postHasRefreshPassword);
 
-authRouter.get('/allusers/:id', authController.getAllUsers);
+authRouter.get('/allusers/:id', tokenValidate, authController.getAllUsers);
 
 authRouter.post('/setavatar/:id', tokenValidate, authController.setAvatar);
 

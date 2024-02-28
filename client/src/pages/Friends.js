@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios, { Axios } from "axios";
+import axios from "axios";
 import styled from "styled-components";
 import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -8,6 +8,7 @@ import { getFriends ,addFriend, searchUser, removeFriend } from "../utils/APIRou
 import AddStory from "../components/AddStoryNavigate";
 import MainPageNavigate from "../components/MainPageNavigate";
 import { BiSolidImageAdd } from "react-icons/bi";
+import LogoutFunction from "../components/LogoutFunction";
 
 export default function InfoStoryStory() {
   const [currentUser, setCurrentUser] = useState(undefined);
@@ -41,6 +42,16 @@ export default function InfoStoryStory() {
       });
       setUserFriends(response.data.response.friendsList);
     } catch (error) {
+      if(error.response?.status === 401) {
+        const success = await LogoutFunction();
+        if (success) {
+          toast.error("oturumun süresi bitmiştir", toastOptions);
+          setTimeout(() => {
+            navigate("/login");
+          }, 3000); 
+        }
+        toast.error("Çıkış Yapıldı", toastOptions);
+      }
       toast.error(`${error.message}`, toastOptions);
     }
   };
@@ -75,7 +86,19 @@ export default function InfoStoryStory() {
         },
       })
       .then((response) => setSearchResult(response.data.response))
-      .catch((error) => toast.error(`${error.message}`, toastOptions));
+      .catch(async (error) => {
+        if(error.response?.status === 401) {
+          const success = await LogoutFunction();
+          if (success) {
+            toast.error("oturumun süresi bitmiştir", toastOptions);
+            setTimeout(() => {
+              navigate("/login");
+            }, 3000); 
+          }
+          toast.error("Çıkış Yapıldı", toastOptions);
+        }
+        toast.error(`${error.message}`, toastOptions)
+      });
   };
 
   const changeCurrentUser = (index, user) => {
@@ -106,7 +129,19 @@ export default function InfoStoryStory() {
         toast.success(`${response.data.msg}`, toastOptions);
         getUserFriends(currentUser._id, token);
       })
-			.catch((error) => toast.error(`${error.message}`, toastOptions));
+			.catch(async (error) => {
+        if(error.response?.status === 401) {
+          const success = await LogoutFunction();
+          if (success) {
+            toast.error("oturumun süresi bitmiştir", toastOptions);
+            setTimeout(() => {
+              navigate("/login");
+            }, 3000); 
+          }
+          toast.error("Çıkış Yapıldı", toastOptions);
+        }
+        toast.error(`${error.message}`, toastOptions)
+      });
 	};
 
   const DeleteFriend = async (e) => {
@@ -124,7 +159,19 @@ export default function InfoStoryStory() {
         toast.success(`${response.data.msg}`, toastOptions);
         getUserFriends(currentUser._id, token);
       })
-			.catch((error) => toast.error(`İşlem Başarısız ${error.message}`, toastOptions));
+			.catch(async (error) => {
+        if(error.response?.status === 401) {
+          const success = await LogoutFunction();
+          if (success) {
+            toast.error("oturumun süresi bitmiştir", toastOptions);
+            setTimeout(() => {
+              navigate("/login");
+            }, 3000); 
+          }
+          toast.error("Çıkış Yapıldı", toastOptions);
+        }
+        toast.error(`İşlem Başarısız ${error.message}`, toastOptions)
+      });
 	};
 
   return (

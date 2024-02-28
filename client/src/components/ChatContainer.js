@@ -1,14 +1,26 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import ChatInput from "./ChatInput";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { sendMessageRoute, recieveMessageRoute } from "../utils/APIRoutes";
+import LogoutFunction from "../components/LogoutFunction";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function ChatContainer({ currentChat, socket, token}) {
+  const navigate = useNavigate();
+
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
   const [arrivalMessage, setArrivalMessage] = useState(null);
+  const toastOptions = {
+    position: "bottom-right",
+    autoClose: 4000,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "dark",
+  };
 
   const fetchData = async () => {
     try {
@@ -64,7 +76,21 @@ export default function ChatContainer({ currentChat, socket, token}) {
           'Content-Type': 'application/json',
           'Authorization': token,
         }
-      });
+      })
+      .then()
+      .catch(async (error) => {
+        if(error.response?.status === 401) {
+          const success = await LogoutFunction();
+          if (success) {
+            toast.error("oturumun süresi bitmiştir", toastOptions);
+            setTimeout(() => {
+              navigate("/login");
+            }, 3000); 
+          }
+          toast.error("Çıkış Yapıldı", toastOptions);
+        }
+        
+      })
 
       const updatedMessages = [...messages, { fromSelf: true, message: msg }];
       setMessages(updatedMessages);

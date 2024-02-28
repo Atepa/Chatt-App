@@ -6,8 +6,8 @@ import Logo from "../assets/logo.svg";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getUserInfo, putUserInfo, putUserPasswordInfo } from "../utils/APIRoutes";
-import  ColorPicker  from "../components/ColorPicker";
-
+import ColorPicker  from "../components/ColorPicker";
+import LogoutFunction from "../components/LogoutFunction";
 
 export default function InfoUser() {
   const navigate = useNavigate();
@@ -97,7 +97,17 @@ export default function InfoUser() {
           });
 				}
 			})
-			.catch(error =>{
+			.catch(async error =>{
+        if(error.response?.status === 401) {
+          const success = await LogoutFunction();
+          if (success) {
+            toast.error("oturumun süresi bitmiştir", toastOptions);
+            setTimeout(() => {
+              navigate("/login");
+            }, 3000); 
+          }
+          toast.error("Çıkış Yapıldı", toastOptions);
+        }
 				toast.error(error.message, toastOptions);
 			})
 		}
@@ -176,7 +186,17 @@ export default function InfoUser() {
           toast.error(`${res.data.msg}`, toastOptions);
         }
       })
-      .catch(error => {
+      .catch(async error => {
+        if(error.response?.status === 401) {
+          const success = await LogoutFunction();
+          if (success) {
+            toast.error("oturumun süresi bitmiştir", toastOptions);
+            setTimeout(() => {
+              navigate("/login");
+            }, 3000); 
+          }
+          toast.error("Çıkış Yapıldı", toastOptions);
+        }
         toast.error(`${error.message}`, toastOptions);
       })
     }
@@ -205,7 +225,17 @@ export default function InfoUser() {
           toast.error(`${res.data.msg}`, toastOptions);
         }
       })
-      .catch(error => {
+      .catch(async (error) => {
+        if(error.response?.status === 401) {
+          const success = await LogoutFunction();
+          if (success) {
+            toast.error("oturumun süresi bitmiştir", toastOptions);
+            setTimeout(() => {
+              navigate("/login");
+            }, 3000); 
+          }
+          toast.error("Çıkış Yapıldı", toastOptions);
+        }
         toast.error(`${error.message}`, toastOptions);
       })
     }

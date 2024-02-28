@@ -4,6 +4,7 @@ import styled from "styled-components";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { deleteStory } from "../utils/APIRoutes";
+import LogoutFunction from "../components/LogoutFunction";
 
 export default function UserStoryDelete({ storyId, user, token }) {
 
@@ -16,10 +17,7 @@ export default function UserStoryDelete({ storyId, user, token }) {
   };
 
   const handleDelete = async () => {
-    console.log(user);
-    console.log(user._id);
-
-    await axios.delete(`${ deleteStory }/${ user._id }/${ storyId }`, {
+     await axios.delete(`${ deleteStory }/${ user._id }/${ storyId }`, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': token,
@@ -30,12 +28,19 @@ export default function UserStoryDelete({ storyId, user, token }) {
             toast.error(`${res.data.msg}`, toastOptions) 
         else {
           toast.success(`Story Silindi`, toastOptions);
-          // setTimeout(() => {
-          //   window.location.reload();
-          // }, 5000);
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
         }
     })
-    .catch (error => {
+    .catch (async error => {
+      if(error.response?.status === 401) {
+        const success = await LogoutFunction();
+        if (success) {
+          toast.error("oturumun süresi bitmiştir", toastOptions);
+        }
+        toast.error("Çıkış Yapıldı", toastOptions);
+      }
         toast.error(`${error.message}`, toastOptions) 
     })
   };

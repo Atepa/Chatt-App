@@ -15,8 +15,6 @@ import InfoUser from "./pages/InfoUser";
 import ForgotPassword from "./pages/ForgotPassword";
 import RefreshPassword from "./pages/RefreshPassword";
 
-import PrivateRoute from "./middleware/TokenController";
-
 export default function App() {
   return (
     <BrowserRouter>
@@ -35,7 +33,6 @@ export default function App() {
         <Route path="/user/info" element={<InfoUser />} />
         <Route path="/account/password/reset" element={<ForgotPassword />} />
         <Route path="/account/password/reset/:refreshToken/:userId" element={<RefreshPassword />} />
-        {/* <Route path="/story/upload" element={<PrivateRoute element={<AddStory />} />} /> */}
       </Routes>
     </BrowserRouter>
   );

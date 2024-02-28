@@ -50,27 +50,28 @@ export default function Chat() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = setToken(JSON.parse(
+      setToken(JSON.parse(
         localStorage.getItem('token')
       ));     
+      const token = JSON.parse(
+        localStorage.getItem('token')
+      );   
+      console.log(token);
        if (currentUser) {
         if (currentUser.isAvatarImageSet) {
-          const axiosInstance = axios.create({
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': token,
-            }
-          });
-
           try {
-            const response = await axiosInstance.get(`${allUsersRoute}/${currentUser._id}`);
+            const response = await axios.get(`${allUsersRoute}/${currentUser._id}`, {
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token,
+              }
+            });
             if (response.status !== 200) {
               toast.error(response.data.msg || 'Bir hata oluştu', toastOptions);
             } else {
               setContacts(response.data.response);
             }
           } catch (error) {
-            console.log(error);
             if(error.response?.status === 401) {
               const success = await LogoutFunction();
               if (success) {
@@ -88,7 +89,7 @@ export default function Chat() {
       }
     };
     fetchData();
-  }, [currentUser, navigate]);
+  }, [currentUser, navigate, token]);
 
   const handleChatChange = (chat) => {
     setCurrentChat(chat);

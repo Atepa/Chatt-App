@@ -4,6 +4,7 @@ import styled from "styled-components";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { postStory } from "../utils/APIRoutes";
+import LogoutFunction from "../components/LogoutFunction";
 
 
 export default function  FileInput()  {
@@ -131,8 +132,18 @@ export default function  FileInput()  {
         navigate("/story");
       }, 3000); 
     })
-    .catch(err =>{
-      toast.error(`Kayıt Başarısız -> ${err.errorMessage}`, toastOptions);
+    .catch(async (error) =>{
+      if(error.response?.status === 401) {
+        const success = await LogoutFunction();
+        if (success) {
+          toast.error("oturumun süresi bitmiştir", toastOptions);
+          setTimeout(() => {
+            navigate("/login");
+          }, 3000); 
+        }
+        toast.error("Çıkış Yapıldı", toastOptions);
+      }
+      toast.error(`Kayıt Başarısız -> ${error.errorMessage}`, toastOptions);
     })
   }
 

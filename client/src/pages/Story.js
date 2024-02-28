@@ -136,7 +136,17 @@ export default function Story() {
       });
       setCurrentStory(updatedStor);  
     })
-    .catch(error => {
+    .catch(async error => {
+      if(error.response?.status === 401) {
+        const success = await LogoutFunction();
+        if (success) {
+          toast.error("oturumun süresi bitmiştir", toastOptions);
+          setTimeout(() => {
+            navigate("/login");
+          }, 3000); 
+        }
+        toast.error("Çıkış Yapıldı", toastOptions);
+      }
       if(error.response?.status === 404)
         toast.error(`${error.response.data.msg}`, toastOptions)
       else 
@@ -160,6 +170,16 @@ export default function Story() {
           },
         });
       } catch (error) {
+        if(error.response?.status === 401) {
+          const success = await LogoutFunction();
+          if (success) {
+            toast.error("oturumun süresi bitmiştir", toastOptions);
+            setTimeout(() => {
+              navigate("/login");
+            }, 3000); 
+          }
+          toast.error("Çıkış Yapıldı", toastOptions);
+        }
         if (error.response?.status === 404) {
           toast.error(`${error.response.data.msg}`, toastOptions);
         } else {

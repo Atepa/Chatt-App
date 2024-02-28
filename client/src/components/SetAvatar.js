@@ -7,6 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { setAvatarRoute } from "../utils/APIRoutes";
+import LogoutFunction from "../components/LogoutFunction";
 
 export default function SetAvatar() {
   const api = `https://api.multiavatar.com/4645646`;
@@ -71,7 +72,17 @@ export default function SetAvatar() {
           }, 3000); 
         }
       })
-      .catch(error =>{
+      .catch(async error =>{
+        if(error.response?.status === 401) {
+          const success = await LogoutFunction();
+          if (success) {
+            toast.error("oturumun süresi bitmiştir", toastOptions);
+            setTimeout(() => {
+              navigate("/login");
+            }, 3000); 
+          }
+          toast.error("Çıkış Yapıldı", toastOptions);
+        }
         toast.error(`${error.response.data.msg}`, toastOptions);
       })
      }
@@ -91,6 +102,16 @@ export default function SetAvatar() {
           const buffer = new Buffer(image.data);
           data.push(buffer.toString("base64"));
         } catch (error) {
+          if(error.response?.status === 401) {
+            const success = await LogoutFunction();
+            if (success) {
+              toast.error("oturumun süresi bitmiştir", toastOptions);
+              setTimeout(() => {
+                navigate("/login");
+              }, 3000); 
+            }
+            toast.error("Çıkış Yapıldı", toastOptions);
+          }
           console.error("Error fetching avatars:", error);
         }
       }

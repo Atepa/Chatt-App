@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
-import { useNavigate, Link, Navigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getStories, getAccessStory } from "../utils/APIRoutes";
@@ -13,6 +13,7 @@ import InstaStory from "react-insta-stories";
 import MainPageNavigate from "../components/MainPageNavigate";
 import UserStoryDelete from "../components/UserStoryDelete";
 import UserAccessStory from "../components/UsersAccesStory";
+import LogoutFunction from "../components/LogoutFunction";
 
 export default function InfoStoryStory() {
   const [userStories, setUserStories] = useState([]);
@@ -82,10 +83,20 @@ export default function InfoStoryStory() {
                 setUserStories(response.data.response);
             }
         })
-        .catch( error => {
-            if(error.response?.status === 404){
-              toast.error(`${error.response.data.msg}`, toastOptions)
-            } else toast.error(`${ error.message}`,toastOptions);
+        .catch( async error => {
+          if(error.response?.status === 401) {
+            const success = await LogoutFunction();
+            if (success) {
+              toast.error("oturumun süresi bitmiştir", toastOptions);
+              setTimeout(() => {
+                navigate("/login");
+              }, 3000); 
+            }
+            toast.error("Çıkış Yapıldı", toastOptions);
+          }
+          if(error.response?.status === 404){
+            toast.error(`${error.response.data.msg}`, toastOptions)
+          } else toast.error(`${ error.message}`,toastOptions);
         })
         } else {
           navigate("/setAvatar");
@@ -116,7 +127,17 @@ export default function InfoStoryStory() {
       if (response.status !== 200)  toast.error(`${response.data.msg}`, toastOptions);
       else  setCurrentStoryAccess(response.data.accessUsers);
     })
-    .catch((error)=> {
+    .catch(async (error)=> {
+      if(error.response?.status === 401) {
+        const success = await LogoutFunction();
+        if (success) {
+          toast.error("oturumun süresi bitmiştir", toastOptions);
+          setTimeout(() => {
+            navigate("/login");
+          }, 3000); 
+        }
+        toast.error("Çıkış Yapıldı", toastOptions);
+      }
       if(error.response?.status === 404){
         toast.error(`${error.response.data.msg}`, toastOptions)
       } else toast.error(`${ error.message}`,toastOptions);
