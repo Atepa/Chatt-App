@@ -1,0 +1,6 @@
+FROM node:21
+WORKDIR /opt/services/admin-service
+COPY app/ .
+RUN npm install
+CMD [ "npm", "start"]
+EXPOSE 8083

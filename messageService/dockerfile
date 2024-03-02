@@ -1,0 +1,6 @@
+FROM node:21
+WORKDIR /opt/services/message_service
+COPY app/ .
+RUN npm install
+CMD [ "node", "index.js"]
+EXPOSE 8082

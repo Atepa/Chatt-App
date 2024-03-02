@@ -1,0 +1,6 @@
+FROM node:21
+WORKDIR /opt/services/api-gateway
+COPY app/ .
+RUN npm install
+CMD [ "npm", "start"]
+EXPOSE 8080
