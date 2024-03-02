@@ -9,9 +9,9 @@ const expressWinston = require('express-winston');
 const socket = require('socket.io');
 const { transports, format } = require('winston');
 const cors = require('cors');
+const { MongoDB } = require('winston-mongodb'); // MongoDB transportı import ediliyor
 const rateLimit = require('./rateLimit');
 const globalError = require('./globalError');
-const { MongoDB } = require('winston-mongodb'); // MongoDB transportı import ediliyor
 
 const port = 8080;
 
