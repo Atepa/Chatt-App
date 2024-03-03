@@ -33,7 +33,10 @@ const friendsSchema = mongoose.Schema({
         type: Date,
         default: () => new Date(Date.now() + (3 * 60 * 60 * 1000)),
       },
-    }, { _id: false }),
+    }, {
+      _id: false,
+      versionKey: false,
+    }),
   ],
 });
 

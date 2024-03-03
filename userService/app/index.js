@@ -26,7 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 // });
 // // Redis End
 
-app.use('/api/auth', userRouter);
+app.use('/api', require('./routes/index'));
 
 app.use('*', (req, res) => {
   const invalidUrl = req.originalUrl;

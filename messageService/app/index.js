@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 // });
 // // Redis End
 
-app.use('/api/messages', messageRouter);
+app.use('/api', messageRouter);
 app.use('*', (req, res) => {
   const invalidUrl = req.originalUrl;
   res.status(404).send(`Invalid Url: ${invalidUrl}`);

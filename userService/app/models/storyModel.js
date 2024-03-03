@@ -49,6 +49,7 @@ const StoryScheman = mongoose.Schema({
     },
   ],
 }, {
+  versionKey: false,
   timestamps: {
     currentTime: () => new Date(Date.now() + (3 * 60 * 60 * 1000)),
   },

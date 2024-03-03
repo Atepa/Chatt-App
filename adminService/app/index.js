@@ -27,7 +27,8 @@ app.use(express.urlencoded({ extended: true }));
 // });
 // // Redis End
 
-app.use('/api/admin', adminRouter);
+app.use('/api', require('./routes/index'));
+
 app.use('*', (req, res) => {
   const invalidUrl = req.originalUrl;
   res.status(404).send(`Invalid Url: ${invalidUrl}`);

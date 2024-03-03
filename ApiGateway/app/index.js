@@ -1,7 +1,7 @@
+if (process.env.NODE_ENV !== 'production') require('dotenv').config();
+
 const express = require('express');
-require('dotenv').config();
 require('winston-mongodb');
-const bodyParser = require('body-parser');
 
 const app = express();
 const { createProxyMiddleware } = require('http-proxy-middleware');
@@ -28,10 +28,10 @@ app.use(expressWinston.logger({
       level: 'debug',
       filename: 'logDebuging.log',
     }),
-    new MongoDB({ // MongoDB transportı burada kullanılıyor
+    new MongoDB({
       db: process.env.Mongodb_Logger_Uri,
       collection: process.env.Mongodb_Logger_Collection,
-      options: { useUnifiedTopology: true }, // useUnifiedTopology: true seçeneğini burada ekliyoruz
+      options: { useUnifiedTopology: true },
     }),
   ],
   format: format.combine(
@@ -46,32 +46,32 @@ app.use(expressWinston.logger({
 app.use('/user-service', createProxyMiddleware({
   target: 'http://localhost:8081',
   // target: 'http://user-service:8081',
-  changeOrigin: true, // eklediğimiz kısım
+  changeOrigin: true,
   pathRewrite: {
-    '^/user-service': '/api', // değiştirilen kısım
+    '^/user-service': '/api',
   },
 }));
 
 app.use('/message-service', createProxyMiddleware({
   target: 'http://localhost:8082',
   // target: 'http://message-service:8082',
-  changeOrigin: true, // eklediğimiz kısım
+  changeOrigin: true,
   pathRewrite: {
-    '^/message-service': '/api', // değiştirilen kısım
+    '^/message-service': '/api',
   },
 }));
 
 app.use('/admin-service', createProxyMiddleware({
   target: 'http://localhost:8083',
   // target: 'http://admin-service:8083',
-  changeOrigin: true, // eklediğimiz kısım
+  changeOrigin: true,
   pathRewrite: {
-    '^/admin-service': '/api', // değiştirilen kısım
+    '^/admin-service': '/api',
   },
 }));
 
-const server = app.listen(port, () => {
-  console.log(`Apı gateway service running at http://127.0.0.1:${port}`);
+const server = app.listen(process.env.PORT, () => {
+  console.log(`Apı gateway service running at http://127.0.0.1:${process.env.PORT}`);
 });
 
 const io = socket(server, {

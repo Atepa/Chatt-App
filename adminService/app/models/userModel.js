@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const userLocationSchema = require('./userLocation');
 
-const istanbulTime = new Date().toLocaleString('en-US', { timeZone: 'Europe/Istanbul' });
-const istanbulDate = new Date(istanbulTime);
-istanbulDate.setHours(istanbulDate.getHours() + 3);
-
 const usersSchema = mongoose.Schema({
   userIsActive: { type: Boolean, default: true },
   userIsAdmin: { type: Boolean, default: false },
@@ -15,15 +11,20 @@ const usersSchema = mongoose.Schema({
   userNickName: { type: String, unique: true },
   userColor: String,
   userGender: String,
-  userCreatedAt: { type: Date, default: istanbulDate },
+  userCreatedAt: { type: Date, default: () => new Date(Date.now() + (3 * 60 * 60 * 1000)) },
   userDeActivateTime: { type: Date, default: null },
   userLocation: userLocationSchema,
-  userLastAccessTime: { type: Date, default: istanbulDate },
+  userLastAccessTime: { type: Date, default: () => new Date(Date.now() + (3 * 60 * 60 * 1000)) },
   userProfilePhotoUrl: { type: String, default: 'default.png' },
   isAvatarImageSet: { type: Boolean, default: false },
   avatarImage: { type: String, default: '' },
   hasStory: { type: Boolean, default: false },
+  hasRefreshPassword: { type: Boolean, default: false },
+  refreshPasswordToken: { type: String, default: '' },
+}, {
+  versionKey: false,
 });
+
 usersSchema.methods.createAuthToken = function () {
   return jwt.sign(
     {
@@ -35,6 +36,6 @@ usersSchema.methods.createAuthToken = function () {
   );
 };
 
-const usersModel = mongoose.model('Users', usersSchema);
+const usersModel = mongoose.model('users', usersSchema);
 
 module.exports = usersModel;

@@ -21,6 +21,8 @@ const usersSchema = mongoose.Schema({
   hasStory: { type: Boolean, default: false },
   hasRefreshPassword: { type: Boolean, default: false },
   refreshPasswordToken: { type: String, default: '' },
+}, {
+  versionKey: false,
 });
 
 usersSchema.methods.createAuthToken = function () {
