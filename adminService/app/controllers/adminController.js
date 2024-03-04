@@ -1,70 +1,153 @@
 const bcrypt = require('bcrypt');
 const UserModel = require('../models/userModel');
+const Response = require('../lib/Response');
+const CustomError = require('../lib/Error');
+const Enum = require('../config/Enum');
 
 exports.postAdminLogin = async function postAdminLogin(req, res) {
   const { userMail, userPassword } = req.body;
-  let user = await UserModel.findOne({ userMail, userIsAdmin: true });
-  if (!user) return res.json({ msg: 'Incorrect Mail', status: false });
-
-  const hashedPassword = await bcrypt.compare(userPassword, user.userPassword);
-  if (!hashedPassword) return res.json({ msg: 'Incorrect Username or Password', status: false });
-
-  if (!user.userIsActive) return res.json({ msg: 'the account is passive', status: false });
-
-  const istanbulTime = new Date().toLocaleString('en-US', { timeZone: 'Europe/Istanbul' });
-  const istanbulDate = new Date(istanbulTime);
-  istanbulDate.setHours(istanbulDate.getHours() + 3);
-
-  user = await UserModel.findOneAndUpdate(
-    { _id: user._id },
-    { $set: { userLastAccessTime: istanbulDate } },
-    { new: true },
-  );
-
-  delete user.userPassword;
-
-  if (user) {
-    const token = user.createAuthToken();
-    return res.status(200).json({ status: true, user, X_Access_Admin_Token: token });
+  if (!('userMail' in req.body) && !('userPassword' in req.body)) {
+    const error = new CustomError(Enum.HTTP_CODES.BAD_REQUEST, 'Validation Error', 'Mail and Password fields must be filled');
+    const errorRespone = Response.errorRespone(error);
+    return res.status(errorRespone.code).json({ errorRespone });
   }
 
-  return res.json({ msg: 'Something went wrong...', status: false, user });
+  return UserModel.findOne({ userMail, userIsAdmin: true })
+    .then(async (user) => {
+      if (!user) {
+        const error = new CustomError(Enum.HTTP_CODES.NOT_FOUND, 'Not Found', 'Users Not Found');
+        const errorRespone = Response.errorRespone(error);
+        return res.status(errorRespone.code).json({ errorRespone });
+      }
+      if (!user.userIsActive) {
+        const error = new CustomError(Enum.HTTP_CODES.NOT_FOUND, 'Inactive', 'Users account is closed');
+        const errorRespone = Response.errorRespone(error);
+        return res.status(errorRespone.code).json({ errorRespone });
+      }
+
+      const hashedPassword = await bcrypt.compare(userPassword, user.userPassword);
+      if (!hashedPassword) {
+        const error = new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, 'Unauthorized', 'Invalid credentials');
+        const errorRespone = Response.errorRespone(error);
+        return res.status(errorRespone.code).json({ errorRespone });
+      }
+
+      return UserModel.findOneAndUpdate(
+        { _id: user._id },
+        { $set: { userLastAccessTime: new Date(Date.now() + (3 * 60 * 60 * 1000)) } },
+        { new: true },
+      )
+        .then((response) => {
+          const token = user.createAuthToken();
+          delete response.userPassword;
+          return res.status(Enum.HTTP_CODES.OK).json(
+            Response.successLoginResponse(response, token),
+          );
+        })
+        .catch((error) => {
+          const errorRespone = Response.errorRespone(error);
+          return res.status(errorRespone.code).json(errorRespone);
+        });
+    })
+    .catch((error) => {
+      const errorRespone = Response.errorRespone(error);
+      return res.status(errorRespone.code).json(errorRespone);
+    });
 };
 
 exports.postAdminExit = async function postAdminExit(req, res) {
   try {
-    return res.json({ msg: 'Logout Access', status: true });
+    return res.status(Enum.HTTP_CODES.OK).json(Response.successResponse('true', true, 'Logout Successful'));
   } catch (error) {
-    return res.status(500).json({ msg: 'Logout Failed', status: false });
+    const errorRespone = Response.errorRespone(error);
+    return res.status(errorRespone.code).json(errorRespone);
   }
 };
 
 exports.getAllUsers = async function getAllUsers(req, res) {
+  if (!('page' in req.params)) {
+    const error = new CustomError(Enum.HTTP_CODES.BAD_REQUEST, 'Validation Error', 'page field must be filled');
+    const errorRespone = Response.errorRespone(error);
+    return res.status(errorRespone.code).json({ errorRespone });
+  }
   let page = req.params.page * 10;
   if (page < 0) page = 0;
-  const users = await UserModel.find().select().limit(20).skip(page);
-  if (!users) return res.status(200).json({ msg: 'No User', status: true });
 
-  return res.status(200).json({ status: true, users });
+  return UserModel.find().select('-userPassword').limit(20).skip(page)
+    .then((users) => {
+      if (!users) {
+        const error = new CustomError(Enum.HTTP_CODES.NOT_FOUND, 'Not Found', 'Users Not Found');
+        const errorRespone = Response.errorRespone(error);
+        return res.status(errorRespone.code).json({ errorRespone });
+      }
+      return res.status(Enum.HTTP_CODES.OK).json(Response.successResponse(users));
+    })
+    .catch((error) => {
+      const errorRespone = Response.errorRespone(error);
+      return res.status(errorRespone.code).json(errorRespone);
+    });
 };
 
 exports.getUserByUserId = async function getUserByUserId(req, res) {
-  const { userId } = req.params;
-  const users = await UserModel.findOne({ _id: userId });
-  if (!users) return res.status(404).json({ msg: 'No User', status: true });
-  return res.status(200).json({ status: true, users });
+  if (!('userId' in req.params)) {
+    const error = new CustomError(Enum.HTTP_CODES.BAD_REQUEST, 'Validation Error', 'page field must be filled');
+    const errorRespone = Response.errorRespone(error);
+    return res.status(errorRespone.code).json({ errorRespone });
+  }
+
+  return UserModel.findOne({ _id: req.params.userId })
+    .then((user) => {
+      if (!user) {
+        const error = new CustomError(Enum.HTTP_CODES.NOT_FOUND, 'Not Found', 'Users Not Found');
+        const errorRespone = Response.errorRespone(error);
+        return res.status(errorRespone.code).json({ errorRespone });
+      }
+      return res.status(Enum.HTTP_CODES.OK).json(Response.successResponse(user));
+    })
+    .catch((error) => {
+      const errorRespone = Response.errorRespone(error);
+      return res.status(errorRespone.code).json(errorRespone);
+    });
 };
 
 exports.putUserByUserId = async function putUserByUserId(req, res) {
-  const { userId } = req.params;
+  console.log('girdi');
 
-  const user = await UserModel.find({ _id: userId });
-  if (!user) return res.status(404).json({ msg: 'No User', status: true });
+  if (!('userId' in req.params)) {
+    const error = new CustomError(Enum.HTTP_CODES.BAD_REQUEST, 'Validation Error', 'page field must be filled');
+    const errorRespone = Response.errorRespone(error);
+    return res.status(errorRespone.code).json({ errorRespone });
+  }
 
-  const bodyUser = new UserModel(req.body); // kontrol edilecek
-  const result = await bodyUser.save();
+  return UserModel.findOne({ _id: req.params.userId })
+    .then((user) => {
+      if (!user) {
+        const error = new CustomError(Enum.HTTP_CODES.NOT_FOUND, 'Not Found', 'Users Not Found');
+        const errorRespone = Response.errorRespone(error);
+        return res.status(errorRespone.code).json({ errorRespone });
+      }
+      const bodyUser = new UserModel(req.body);
+      console.log('bodyUser');
 
-  return res.status(200).json({ status: true, result });
+      return bodyUser.save()
+        .then((response) => {
+          if (response) {
+            return res.status(Enum.HTTP_CODES.OK).json(Response.successResponse(response));
+          }
+
+          const error = new CustomError(Enum.HTTP_CODES.NOT_FOUND, 'Not Found', 'Users Not Found');
+          const errorRespone = Response.errorRespone(error);
+          return res.status(errorRespone.code).json({ errorRespone });
+        })
+        .catch((error) => {
+          const errorRespone = Response.errorRespone(error);
+          return res.status(errorRespone.code).json(errorRespone);
+        });
+    })
+    .catch((error) => {
+      const errorRespone = Response.errorRespone(error);
+      return res.status(errorRespone.code).json(errorRespone);
+    });
 };
 
 // exports.getUserProccessByUserId = async function getUserProccessByUserId(req, res) {
@@ -99,14 +182,26 @@ exports.putUserByUserId = async function putUserByUserId(req, res) {
 // };
 
 exports.deleteUserByUserId = async function deleteUserByUserId(req, res) {
-  const { userId } = req.params;
-
-  const user = await UserModel.findOneAndUpdate(
-    { _id: userId },
+  if (!('userId' in req.params)) {
+    const error = new CustomError(Enum.HTTP_CODES.BAD_REQUEST, 'Validation Error', 'page field must be filled');
+    const errorRespone = Response.errorRespone(error);
+    return res.status(errorRespone.code).json({ errorRespone });
+  }
+  return UserModel.findOneAndUpdate(
+    { _id: req.params.userId },
     { $set: { userIsActive: false } },
     { new: true },
-  );
-  if (!user) return res.status(404).json({ msg: 'No User', status: false });
-
-  return res.status(200).json({ status: true, user });
+  )
+    .then((user) => {
+      if (!user) {
+        const error = new CustomError(Enum.HTTP_CODES.NOT_FOUND, 'Not Found', 'Users Not Found');
+        const errorRespone = Response.errorRespone(error);
+        return res.status(errorRespone.code).json({ errorRespone });
+      }
+      return res.status(Enum.HTTP_CODES.OK).json(Response.successResponse(user));
+    })
+    .catch((error) => {
+      const errorRespone = Response.errorRespone(error);
+      return res.status(errorRespone.code).json(errorRespone);
+    });
 };

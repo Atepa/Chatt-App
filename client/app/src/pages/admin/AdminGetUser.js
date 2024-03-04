@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { adminUserRoute } from "../../utils/APIRoutes";
+import { adminUserRoute, adminPutUser} from "../../utils/APIRoutes";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
-import { loginRoute } from "../../utils/APIRoutes";
 import styled from "styled-components";
 
 
 export default function UserDetail () {
   const { userId } = useParams();
-  const [userData, setUserData] = useState({});
-  const [locationCountry, setlocationCountry] = useState("");
-  const [locationPostCode, setlocationPostCode] = useState("");
-  const [locationAddress, setLocationAddress] = useState("");
+  const [userData, setUserData] = useState([]);
+  const [locationCountry, setlocationCountry] = useState('');
+  const [locationPostCode, setlocationPostCode] = useState('');
+  const [locationAddress, setLocationAddress] = useState('');
+  const [changesSaved, setChangesSaved] = useState(false);
   const navigate = useNavigate();
+  // düzenlenecek
   const [values, setValues] = useState({ userMail: "", userPassword: "" });
   const toastOptions = {
     position: "bottom-right",
@@ -23,8 +24,8 @@ export default function UserDetail () {
     draggable: true,
     theme: "dark",
   };
-  const [changesSaved, setChangesSaved] = useState(false);
 
+    // düzenlenecek
   const handleChange = (event) => {
     setValues({ ...values, [event.target.name]: event.target.value });
   };
@@ -40,12 +41,14 @@ export default function UserDetail () {
     }
     return true;
   };
-
+// yapılandıralacak
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (validateForm()) {
       const { userMail, userPassword } = values;
-      const response = await axios.post(loginRoute, {
+      // yapılandıralacak
+
+      const response = await axios.post(`${adminPutUser}/${userId}`, {
         userMail,
         userPassword,
       }, {
@@ -53,7 +56,6 @@ export default function UserDetail () {
           'Content-Type': 'application/json',
         },
       });
-  
       const data = response.data;
   
       if (data.status === false) {
@@ -78,22 +80,20 @@ export default function UserDetail () {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const {data} = await axios.get(`${adminUserRoute}/${userId}`);
-        setUserData(data.users);
-        setlocationCountry(data.users.userLocation.locationCountry);
-        setlocationPostCode(data.users.userLocation.locationPostCode);
-        setLocationAddress(data.users.userLocation.locationAddress);
+        const {data: { data:users }} = await axios.get(`${adminUserRoute}/${userId}`);
+        setUserData(users);
+        setlocationCountry(users.userLocation.locationCountry);
+        setlocationPostCode(users.userLocation.locationPostCode);
+        setLocationAddress(users.userLocation.locationAddress);
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
-      console.log(setlocationPostCode);
     };
     
     fetchUserData();
   }, [userId]);
 
   const handleSaveChanges = () => {
- 
     setChangesSaved(true);
   };
 

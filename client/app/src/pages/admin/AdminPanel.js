@@ -13,13 +13,13 @@ export default function Login() {
   const [localpage, setLocalPage] = useState([]);
   const [filter, setFilter] = useState([]);
   const { page } = useParams();
-
-
+  
+  
+  const navigate = useNavigate();
   function handleFilter(event){
     const searchTerm = event.target.value.toLowerCase();
 
     const newData = filter.filter(row => {
-      // Mail, createdAt, ve _id alanlarında arama yapılır
       return (
         row._id.toLowerCase().includes(searchTerm) ||
         row.userMail.toLowerCase().includes(searchTerm) ||
@@ -32,11 +32,10 @@ export default function Login() {
   };
 
   const handleViewDetails = (row) => {
+    console .log(row._id);
     navigate(`/admin/user/${row._id.toString()}`);
   };
   
-
-  const navigate = useNavigate();
 
   const columns = [
     {
@@ -106,27 +105,25 @@ export default function Login() {
 
     useEffect(() => {
         const fetchData = async () => {
-          console.log(page);
           const  token  = await JSON.parse(
             localStorage.getItem('token')
           );
           const axiosInstance = axios.create({
             headers: {
-               'Content-Type': 'application/json',
-               'Authorization': token,
+              'Content-Type': 'application/json',
+              'Authorization': token,
             }
           });
-          console.log(page);
-          const { data } = await axiosInstance.get(`${adminUsersRoute}/${page}`); 
-          if(data.users == null || data.users == 0) 
+          const { data }  = await axiosInstance.get(`${adminUsersRoute}/${page}`); 
+          console.log(data.data);
+          if(data.data.users === null || data.data.users === 0) 
             navigate(`/admin/panel/0}`);
-          setUsers(data.users);
-          setFilter(data.users);
+          setUsers(data.data);
+          setFilter(data.data);
         }
   
         fetchData();
       }, [navigate]);
-     
     return (
       <FormContainer>
         <div className = 'FormContainer'>
@@ -141,7 +138,6 @@ export default function Login() {
           />
         </div>
       </FormContainer>
-        
       );
 };
 
